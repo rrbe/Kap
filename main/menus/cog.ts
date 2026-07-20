@@ -1,4 +1,5 @@
 import {Menu} from 'electron';
+import {is} from 'electron-util';
 import {MenuItemId, MenuOptions} from './utils';
 import {getAboutMenuItem, getExportHistoryMenuItem, getOpenFileMenuItem, getPreferencesMenuItem, getSendFeedbackMenuItem} from './common';
 import {plugins} from '../plugins';
@@ -95,7 +96,14 @@ const getMicrophoneItem = async (): Promise<MenuOptions[number]> => {
 };
 
 export const getCogMenu = async () => {
-  return Menu.buildFromTemplate(
+  const startedAt = Date.now();
+  const menu = Menu.buildFromTemplate(
     await getCogMenuTemplate()
   );
+
+  if (is.development) {
+    console.log(`Built context menu in ${Date.now() - startedAt}ms`);
+  }
+
+  return menu;
 };

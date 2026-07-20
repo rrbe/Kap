@@ -7,7 +7,12 @@ const aperture = require('aperture');
 
 const {showError} = require('./errors');
 
-export const getAudioDevices = async () => {
+type AudioDevice = {id: string; name: string};
+
+let cachedAudioDevices: AudioDevice[] | undefined;
+let pendingAudioDevices: Promise<AudioDevice[]> | undefined;
+
+const loadAudioDevices = async (): Promise<AudioDevice[]> => {
   if (!hasMicrophoneAccess()) {
     return [];
   }
@@ -46,6 +51,25 @@ export const getAudioDevices = async () => {
       return [];
     }
   }
+};
+
+export const getAudioDevices = async ({refresh = false}: {refresh?: boolean} = {}) => {
+  if (cachedAudioDevices && !refresh) {
+    return cachedAudioDevices;
+  }
+
+  if (!pendingAudioDevices) {
+    pendingAudioDevices = loadAudioDevices()
+      .then(devices => {
+        cachedAudioDevices = devices;
+        return devices;
+      })
+      .finally(() => {
+        pendingAudioDevices = undefined;
+      });
+  }
+
+  return pendingAudioDevices;
 };
 
 export const getDefaultInputDevice = () => {

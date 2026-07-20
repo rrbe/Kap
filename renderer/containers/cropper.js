@@ -81,8 +81,18 @@ export default class CropperContainer extends Container {
     const {width: screenWidth, height: screenHeight, isActive, id, cropper = {}} = display;
     const {x, y, width, height, ratio = [4, 3]} = cropper;
 
+    this.cursorContainer.reset();
     setScreenSize(screenWidth, screenHeight);
     this.setState({
+      isRecording: false,
+      willStartRecording: false,
+      isResizing: false,
+      isMoving: false,
+      isPicking: false,
+      resizeFromCenter: false,
+      showHandles: true,
+      selectedApp: '',
+      isFullscreen: false,
       screenWidth,
       screenHeight,
       isActive,

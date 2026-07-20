@@ -21,4 +21,8 @@ export default class CursorContainer extends Container {
     const {observers} = this.state;
     this.setState({observers: observers.filter(o => o !== observer)});
   };
+
+  reset = () => {
+    this.setState({observers: []});
+  };
 }

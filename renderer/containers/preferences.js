@@ -49,7 +49,7 @@ export default class PreferencesContainer extends Container {
     const {audioInputDeviceId} = this.settings.store;
     const {name: currentDefaultName} = getDefaultInputDevice() || {};
 
-    const audioDevices = await getAudioDevices();
+    const audioDevices = await getAudioDevices({refresh: true});
     const updates = {
       audioDevices: [
         {name: `System Default${currentDefaultName ? ` (${currentDefaultName})` : ''}`, id: defaultInputDeviceId},

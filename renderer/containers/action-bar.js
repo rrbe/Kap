@@ -42,6 +42,8 @@ export default class ActionBarContainer extends Container {
     const {x, y, ratioLocked} = cropper ? this.settings.get('actionBar') : {};
 
     this.setState({
+      advanced: false,
+      isMoving: false,
       screenWidth: width,
       screenHeight: height,
       x: x ? x : (width - barWidth) / 2,
