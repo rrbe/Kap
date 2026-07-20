@@ -2,8 +2,6 @@ import {hasMicrophoneAccess} from '../common/system-permissions';
 import * as audioDevices from 'macos-audio-devices';
 import {settings} from '../common/settings';
 import {defaultInputDeviceId} from '../common/constants';
-import Sentry from './sentry';
-const aperture = require('aperture');
 
 const {showError} = require('./errors');
 
@@ -36,20 +34,8 @@ const loadAudioDevices = async (): Promise<AudioDevice[]> => {
       return 0;
     }).map(device => ({id: device.uid, name: device.name}));
   } catch (error) {
-    try {
-      const devices = await aperture.audioDevices();
-
-      if (!Array.isArray(devices)) {
-        Sentry.captureException(new Error(`devices is not an array: ${JSON.stringify(devices)}`));
-        showError(error);
-        return [];
-      }
-
-      return devices;
-    } catch (error) {
-      showError(error);
-      return [];
-    }
+    showError(error);
+    return [];
   }
 };
 

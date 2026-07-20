@@ -32,11 +32,11 @@ export interface ApertureOptions {
   highlightClicks: boolean;
   screenId: number;
   audioDeviceId?: string;
+  recordSystemAudio: boolean;
   videoCodec?: Encoding;
 }
 
 export interface StartRecordingOptions {
   cropperBounds: Rectangle;
-  screenBounds: Rectangle;
   displayId: number;
 }

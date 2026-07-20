@@ -18,7 +18,7 @@ class General extends React.Component {
     category: 'general'
   };
 
-  state = {showCursorSupported: window.kap.app.getInfo().showCursorSupported};
+  state = {highlightClicksSupported: window.kap.app.getInfo().highlightClicksSupported};
 
   openKapturesDir = () => {
     window.kap.shell.openPath(this.props.kapturesDir);
@@ -40,6 +40,7 @@ class General extends React.Component {
       setAudioInputDeviceId,
       audioDevices,
       recordAudio,
+      recordSystemAudio,
       pickKapturesDir,
       setOpenOnStartup,
       updateShortcut,
@@ -51,7 +52,7 @@ class General extends React.Component {
       shortcutMap
     } = this.props;
 
-    const {showCursorSupported} = this.state;
+    const {highlightClicksSupported} = this.state;
 
     const devices = audioDevices.map(device => ({
       label: device.name,
@@ -65,30 +66,27 @@ class General extends React.Component {
 
     return (
       <Category>
-        {
-          showCursorSupported &&
-          <Item
-            key="showCursor"
-            parentItem
-            title="Show cursor"
-            subtitle="Display the mouse cursor in your Kaptures"
-          >
-            <Switch
-              tabIndex={tabIndex}
-              checked={showCursor}
-              onClick={
-                () => {
-                  if (showCursor) {
-                    toggleSetting('highlightClicks', false);
-                  }
-
-                  toggleSetting('showCursor');
+        <Item
+          key="showCursor"
+          parentItem
+          title="Show cursor"
+          subtitle="Display the mouse cursor in your Kaptures"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={showCursor}
+            onClick={
+              () => {
+                if (showCursor) {
+                  toggleSetting('highlightClicks', false);
                 }
-              }/>
-          </Item>
-        }
+
+                toggleSetting('showCursor');
+              }
+            }/>
+        </Item>
         {
-          showCursorSupported &&
+          highlightClicksSupported &&
           <Item key="highlightClicks" subtitle="Highlight clicks">
             <Switch
               tabIndex={tabIndex}
@@ -124,6 +122,16 @@ class General extends React.Component {
           subtitle="Infinitely loop exports when supported"
         >
           <Switch tabIndex={tabIndex} checked={loopExports} onClick={() => toggleSetting('loopExports')}/>
+        </Item>
+        <Item
+          key="recordSystemAudio"
+          title="System audio"
+          subtitle="Include audio played by apps and the system"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={recordSystemAudio}
+            onClick={() => toggleSetting('recordSystemAudio')}/>
         </Item>
         <Item
           key="recordAudio"
@@ -221,6 +229,7 @@ General.propTypes = {
   setAudioInputDeviceId: PropTypes.elementType.isRequired,
   audioDevices: PropTypes.array,
   recordAudio: PropTypes.bool,
+  recordSystemAudio: PropTypes.bool,
   kapturesDir: PropTypes.string,
   openOnStartup: PropTypes.bool,
   allowAnalytics: PropTypes.bool,
@@ -243,6 +252,7 @@ export default connect(
     highlightClicks,
     record60fps,
     recordAudio,
+    recordSystemAudio,
     enableShortcuts,
     audioInputDeviceId,
     audioDevices,
@@ -260,6 +270,7 @@ export default connect(
     highlightClicks,
     record60fps,
     recordAudio,
+    recordSystemAudio,
     enableShortcuts,
     audioInputDeviceId,
     audioDevices,

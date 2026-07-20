@@ -24,6 +24,7 @@ interface Settings {
   loopExports: boolean;
   recordKeyboardShortcut: boolean;
   recordAudio: boolean;
+  recordSystemAudio: boolean;
   audioInputDeviceId?: string;
   cropperShortcut: {
     metaKey: boolean;
@@ -72,6 +73,10 @@ export const settings = new Store<Settings>({
       default: true
     },
     recordAudio: {
+      type: 'boolean',
+      default: false
+    },
+    recordSystemAudio: {
       type: 'boolean',
       default: false
     },

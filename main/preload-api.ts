@@ -172,7 +172,7 @@ const setupSyncApi = () => {
           version: app.getVersion(),
           development: is.development,
           homeDirectory: app.getPath('home'),
-          showCursorSupported: macosVersion.isGreaterThanOrEqualTo('10.13')
+          highlightClicksSupported: macosVersion.isGreaterThanOrEqualTo('15')
         };
         break;
       case 'appearance': {

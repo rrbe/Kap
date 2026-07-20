@@ -19,8 +19,9 @@
     "test:main": "TS_NODE_PROJECT=test/tsconfig.json ava",
     "test:ci": "yarn test:main --tap | tap-xunit > ~/reports/ava.xml",
     "test": "yarn lint && yarn test:main",
-    "start": "tsc && node scripts/dev.mjs",
-    "build-main": "tsc",
+    "start": "yarn build-main && node scripts/dev.mjs",
+    "build-capture-helper": "node scripts/build-capture-helper.mjs",
+    "build-main": "yarn build-capture-helper && tsc",
     "build-renderer": "vite build --config renderer/vite.config.ts",
     "build": "yarn build-main && yarn build-renderer",
     "dist": "npm run build && electron-builder",
@@ -37,7 +38,6 @@
     "@sentry/electron": "^2.4.0",
     "@sindresorhus/to-milliseconds": "^1.2.0",
     "ajv": "^6.12.2",
-    "aperture": "^6.1.2",
     "base64-img": "^1.0.4",
     "classnames": "^2.2.6",
     "clean-stack": "^3.0.1",
@@ -255,10 +255,13 @@
       "!renderer",
       "renderer/out"
     ],
+    "asarUnpack": [
+      "dist-js/kap-capture"
+    ],
     "mac": {
       "electronUpdaterCompatibility": ">=2.16",
       "category": "public.app-category.productivity",
-      "minimumSystemVersion": "12.0.0",
+      "minimumSystemVersion": "13.0.0",
       "darkModeSupport": true,
       "hardenedRuntime": true,
       "notarize": true,

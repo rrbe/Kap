@@ -31,8 +31,6 @@ const RecordButton = ({
   y,
   width,
   height,
-  screenWidth,
-  screenHeight,
   displayId,
   willStartRecording,
   recordAudio,
@@ -104,10 +102,6 @@ const RecordButton = ({
           y,
           width,
           height
-        },
-        screenBounds: {
-          width: screenWidth,
-          height: screenHeight
         },
         displayId
       }).catch(console.error);
@@ -221,8 +215,6 @@ RecordButton.propTypes = {
   y: PropTypes.number,
   width: PropTypes.number,
   height: PropTypes.number,
-  screenWidth: PropTypes.number,
-  screenHeight: PropTypes.number,
   displayId: PropTypes.number,
   willStartRecording: PropTypes.elementType,
   recordAudio: PropTypes.bool,
@@ -231,6 +223,6 @@ RecordButton.propTypes = {
 
 export default connect(
   [CropperContainer],
-  ({x, y, width, height, screenWidth, screenHeight, displayId, recordAudio, audioInputDeviceId}) => ({x, y, width, height, screenWidth, screenHeight, displayId, recordAudio, audioInputDeviceId}),
+  ({x, y, width, height, displayId, recordAudio, audioInputDeviceId}) => ({x, y, width, height, displayId, recordAudio, audioInputDeviceId}),
   ({willStartRecording}) => ({willStartRecording})
 )(RecordButton);

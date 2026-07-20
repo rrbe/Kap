@@ -8,7 +8,7 @@
 - [x] 阶段 3：移除 remote，建立安全 IPC 边界（`c445334`）
 - [x] 阶段 4：升级 Electron（`0a5d1eb`）
 - [x] 阶段 5：优化 ARM 导出管线
-- [ ] 阶段 6：迁移录屏到 ScreenCaptureKit
+- [x] 阶段 6：迁移录屏到 ScreenCaptureKit
 - [ ] 阶段 7：删除和升级其余依赖，迁移 pnpm
 - [ ] 阶段 8：跨架构回归与发布准备
 
@@ -180,7 +180,7 @@ Vite renderer
 
 ### 决策门
 
-ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 macOS 13。执行本阶段前确认是：
+ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 macOS 13。本阶段已确认仅支持 macOS 13 及以上，不保留旧录屏回退管线。
 
 - 提高最低版本到 macOS 13；或
 - 为旧系统继续维护旧 Aperture 回退管线。
@@ -199,6 +199,15 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 - Apple Silicon 录制不再依赖旧 CGDisplayStream/AVCaptureScreenInput 管线。
 - 1080p/4K 录制的 CPU、丢帧、停止等待时间不劣于旧实现，并记录对比。
 - 多显示器、系统音频、麦克风和暂停恢复 smoke test 通过。
+
+### 实施结果
+
+- 最低系统版本提高到 macOS 13；删除旧 `aperture` Node/AVFoundation 录屏依赖，改为固定 Aperture 3.0.0 的最小 Swift 助手。
+- 助手直接链接 ScreenCaptureKit，并构建为 arm64+x86_64 universal 可执行文件；Node 侧只保留启动、命令协议和异常退出恢复。
+- 支持区域、光标、麦克风、系统音频、暂停/恢复和取消；点击高亮只在原生 API 支持的 macOS 15 及以上显示。
+- 上游 Aperture 3 在“系统音频 + 暂停恢复”组合下会生成损坏 MP4。本实现让暂停结束当前片段、恢复时启动新片段，停止时用 AVFoundation passthrough 合并，避免重编码并通过组合 smoke test。
+- 两块显示器均完成区域录制；系统音频、内置麦克风、暂停恢复、取消清理和异常启动自动化/实机检查通过。
+- 30 秒 1080p 和 15 秒 4K 连续变化画面中，新管线的录制进程 CPU、内存和停止等待均低于旧管线；具体数据记录在 `docs/modernization-baseline.md`。
 
 ## 阶段 7：删除和升级其余依赖
 

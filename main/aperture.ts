@@ -13,9 +13,7 @@ import {ApertureOptions, StartRecordingOptions} from './common/types';
 import {InstalledPlugin} from './plugins/plugin';
 import {RecordService, RecordServiceHook} from './plugins/service';
 import {getCurrentDurationStart, getOverallDuration, setCurrentDurationStart, setOverallDuration} from './utils/track-duration';
-
-const createAperture = require('aperture');
-const aperture = createAperture();
+import {screenRecorder} from './utils/screen-recorder';
 
 let recordingPlugins: Array<{plugin: InstalledPlugin; service: RecordService}> = [];
 const serviceState = new Map<string, RecordServiceState>();
@@ -80,15 +78,14 @@ export const startRecording = async (options: StartRecordingOptions) => {
   windowManager.cropper?.disable();
   disableTray();
 
-  const {cropperBounds, screenBounds, displayId} = options;
-
-  cropperBounds.y = screenBounds.height - (cropperBounds.y + cropperBounds.height);
+  const {cropperBounds, displayId} = options;
 
   const {
     record60fps,
     showCursor,
     highlightClicks,
-    recordAudio
+    recordAudio,
+    recordSystemAudio
   } = settings.store;
 
   apertureOptions = {
@@ -96,7 +93,8 @@ export const startRecording = async (options: StartRecordingOptions) => {
     cropArea: cropperBounds,
     showCursor,
     highlightClicks,
-    screenId: displayId
+    screenId: displayId,
+    recordSystemAudio
   };
 
   if (recordAudio) {
@@ -138,7 +136,7 @@ export const startRecording = async (options: StartRecordingOptions) => {
   await callPlugins('willStartRecording');
 
   try {
-    const filePath = await aperture.startRecording(apertureOptions);
+    const filePath = await screenRecorder.startRecording(apertureOptions);
     setOverallDuration(0);
     setCurrentDurationStart(Date.now());
 
@@ -169,8 +167,8 @@ export const startRecording = async (options: StartRecordingOptions) => {
   setCropperShortcutAction(stopRecording);
   past = Date.now();
 
-  // Track aperture errors after recording has started, to avoid kap freezing if something goes wrong
-  aperture.recorder.catch((error: any) => {
+  // Track native capture errors after recording has started, to avoid Kap freezing if something goes wrong
+  screenRecorder.completion?.catch((error: any) => {
     // Make sure it doesn't catch the error of ending the recording
     if (past) {
       track('recording/stopped/error');
@@ -196,7 +194,7 @@ export const stopRecording = async () => {
   let filePath;
 
   try {
-    filePath = await aperture.stopRecording();
+    filePath = await screenRecorder.stopRecording();
     setOverallDuration(0);
     setCurrentDurationStart(0);
   } catch (error) {
@@ -232,7 +230,7 @@ export const stopRecordingWithNoEdit = async () => {
   past = undefined;
 
   try {
-    await aperture.stopRecording();
+    await screenRecorder.stopRecording();
     setOverallDuration(0);
     setCurrentDurationStart(0);
   } catch (error) {
@@ -252,13 +250,13 @@ export const stopRecordingWithNoEdit = async () => {
 
 export const pauseRecording = async () => {
   // Ensure we only pause if there's a recording in progress and if it's currently not paused
-  const isPaused = await aperture.isPaused();
+  const isPaused = await screenRecorder.isPaused();
   if (!past || isPaused) {
     return;
   }
 
   try {
-    await aperture.pause();
+    await screenRecorder.pause();
     setOverallDuration(getOverallDuration() + (Date.now() - getCurrentDurationStart()));
     setCurrentDurationStart(0);
     setPausedTray();
@@ -273,13 +271,13 @@ export const pauseRecording = async () => {
 
 export const resumeRecording = async () => {
   // Ensure we only resume if there's a recording in progress and if it's currently paused
-  const isPaused = await aperture.isPaused();
+  const isPaused = await screenRecorder.isPaused();
   if (!past || !isPaused) {
     return;
   }
 
   try {
-    await aperture.resume();
+    await screenRecorder.resume();
     setCurrentDurationStart(Date.now());
     setRecordingTray();
     track('recording/resumed');

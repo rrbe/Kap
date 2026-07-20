@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "aperture",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wulkano/Aperture.git",
+      "state" : {
+        "revision" : "7591bb540c844fe6c47edeac34b17c25e92a717f",
+        "version" : "3.0.0"
+      }
+    }
+  ],
+  "version" : 2
+}
