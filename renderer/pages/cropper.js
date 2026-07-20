@@ -1,6 +1,6 @@
 import React from 'react';
 import {Provider} from '../utils/state-container';
-import {ipcRenderer} from 'electron-better-ipc';
+import {ipcRenderer} from 'utils/ipc';
 
 import Overlay from '../components/cropper/overlay';
 import Cropper from '../components/cropper';

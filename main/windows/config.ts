@@ -1,7 +1,7 @@
 'use strict';
 
 import {BrowserWindow} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import pEvent from 'p-event';
 
 import {loadRoute} from '../utils/routes';

@@ -1,5 +1,5 @@
 import PCancelable from 'p-cancelable';
-import tempy from 'tempy';
+import {temporaryFile} from '../utils/temporary-path';
 import {convert} from './process';
 import {areDimensionsEven, conditionalArgs, ConvertOptions, makeEven} from './utils';
 import {settings} from '../common/settings';
@@ -20,7 +20,7 @@ export const getVideoEncoderArgs = (format: Format, useHardwareAcceleration = ha
 // `time ffmpeg -i original.mp4 -vf fps=30,scale=480:-1::flags=lanczos,palettegen palette.png`
 // `time ffmpeg -i original.mp4 -i palette.png -filter_complex 'fps=30,scale=-1:-1:flags=lanczos[x]; [x][1:v]paletteuse' palette.gif`
 const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PCancelable.OnCancelFunction) => {
-  const palettePath = tempy.file({extension: 'png'});
+  const palettePath = temporaryFile({extension: 'png'});
   const paletteColors = settings.get('lossyCompression', false) ? 128 : 256;
 
   const paletteProcess = convert(palettePath, {shouldTrack: false}, conditionalArgs(

@@ -1,10 +1,10 @@
 import {serial as testAny, TestInterface} from 'ava';
-import tempy from 'tempy';
 import fs from 'fs';
 import moment from 'moment';
 import sinon, {SinonFakeTimers} from 'sinon';
 import path from 'path';
 import type {MockWindowManager} from './mocks/window-manager';
+import {temporaryFile} from '../main/utils/temporary-path';
 
 const test = testAny as TestInterface<{
   now: Date;
@@ -68,8 +68,8 @@ test.afterEach.always(t => {
 });
 
 test('`getPastRecordings()`', t => {
-  const existingPath = tempy.file({extension: 'mp4'});
-  const missingPath = tempy.file({extension: 'mp4'});
+  const existingPath = temporaryFile({extension: 'mp4'});
+  const missingPath = temporaryFile({extension: 'mp4'});
 
   fs.writeFileSync(existingPath, 'data');
   t.context.paths = [existingPath];
@@ -176,7 +176,7 @@ test('`hasActiveRecording()` with known corrupt recording', async t => {
 });
 
 test('`hasActiveRecording()` with unknown corrupt recording', async t => {
-  const filePath = tempy.file();
+  const filePath = temporaryFile();
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
@@ -260,7 +260,7 @@ test('`updatePluginState()`', t => {
 });
 
 test('`stopCurrentRecording()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
@@ -289,14 +289,14 @@ test('`stopCurrentRecording()`', t => {
 });
 
 test('`cleanPastRecordings()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
   recordingHistory.set('recordings', [
     {filePath},
     // Should ignore file that doesn't exist
-    {filePath: tempy.file({extension: 'mp4'})}
+    {filePath: temporaryFile({extension: 'mp4'})}
   ]);
 
   cleanPastRecordings();
@@ -305,7 +305,7 @@ test('`cleanPastRecordings()`', t => {
 });
 
 test('`addRecording()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
 
   addRecording({filePath} as PastRecording);
 

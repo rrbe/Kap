@@ -2,7 +2,6 @@ import {app} from 'electron';
 import {is, enforceMacOSAppLocation} from 'electron-util';
 import log from 'electron-log';
 import {autoUpdater} from 'electron-updater';
-import toMilliseconds from '@sindresorhus/to-milliseconds';
 
 import './windows/load';
 import './utils/sentry';
@@ -70,7 +69,7 @@ const checkForUpdates = () => {
   // @ts-expect-error
   autoUpdater.logger.transports.file.level = 'info';
 
-  setInterval(checkForUpdates, toMilliseconds({hours: 1}));
+  setInterval(checkForUpdates, 60 * 60 * 1000);
 
   checkForUpdates();
   return true;

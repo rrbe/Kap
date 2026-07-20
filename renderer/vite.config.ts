@@ -23,7 +23,6 @@ export default defineConfig({
       common: path.resolve(root, 'common'),
       components: path.resolve(root, 'components'),
       containers: path.resolve(root, 'containers'),
-      'electron-better-ipc': path.resolve(root, 'electron-better-ipc.ts'),
       hooks: path.resolve(root, 'hooks'),
       utils: path.resolve(root, 'utils'),
       vectors: path.resolve(root, 'vectors')

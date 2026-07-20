@@ -1,9 +1,9 @@
 import sinon from 'sinon';
-import tempy from 'tempy';
+import {temporaryDirectory} from '../../main/utils/temporary-path';
 import path from 'path';
 import {EventEmitter} from 'events';
 
-const temporaryDir = tempy.directory();
+const temporaryDir = temporaryDirectory();
 
 process.env.TZ = 'America/New_York';
 (process.versions as any).chrome = '';

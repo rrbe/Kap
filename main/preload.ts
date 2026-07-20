@@ -2,13 +2,13 @@
 import {contextBridge, ipcRenderer} from 'electron';
 import type {KapApi} from './common/types/preload';
 
-const getRendererSendChannel = (windowId: number, channel: string) => `%better-ipc-send-channel-${windowId}-${channel}`;
+const getRendererSendChannel = (windowId: number, channel: string) => `kap:renderer-call:${windowId}:${channel}`;
 const getResponseChannels = (channel: string) => {
   const id = `${Date.now()}-${Math.random()}`;
   return {
-    sendChannel: `%better-ipc-send-channel-${channel}`,
-    dataChannel: `%better-ipc-response-data-channel-${channel}-${id}`,
-    errorChannel: `%better-ipc-response-error-channel-${channel}-${id}`
+    sendChannel: `kap:main-call:${channel}`,
+    dataChannel: `kap:response:${channel}:${id}:data`,
+    errorChannel: `kap:response:${channel}:${id}:error`
   };
 };
 

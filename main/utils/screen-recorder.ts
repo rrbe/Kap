@@ -2,7 +2,7 @@ import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import readline from 'readline';
 import path from 'path';
 import util from 'electron-util';
-import tempy from 'tempy';
+import {temporaryFile} from './temporary-path';
 
 import {ApertureOptions} from '../common/types';
 
@@ -53,7 +53,7 @@ export class ScreenRecorder {
       throw new Error('Call `.stopRecording()` first');
     }
 
-    this.outputPath = tempy.file({extension: 'mp4'});
+    this.outputPath = temporaryFile({extension: 'mp4'});
     this.stderr = '';
     this.expectedExit = false;
 

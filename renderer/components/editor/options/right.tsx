@@ -1,7 +1,7 @@
 import {GearIcon} from '../../../vectors';
 import OptionsContainer from '../options-container';
 import Select from './select';
-import {ipcRenderer as ipc} from 'electron-better-ipc';
+import {ipcRenderer as ipc} from 'utils/ipc';
 import useConversionIdContext from 'hooks/editor/use-conversion-id';
 import useEditorWindowState from 'hooks/editor/use-editor-window-state';
 import VideoTimeContainer from '../video-time-container';

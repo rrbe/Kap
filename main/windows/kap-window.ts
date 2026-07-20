@@ -1,5 +1,5 @@
 import electron, {app, BrowserWindow, Menu} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import {customApplicationMenu, defaultApplicationMenu, MenuModifier} from '../menus/application';
 import {loadRoute} from '../utils/routes';
 import {secureWebPreferences} from './web-preferences';

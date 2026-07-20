@@ -6,7 +6,7 @@ import {InstalledPlugin} from './plugins/plugin';
 import {ShareService} from './plugins/service';
 import {ShareServiceContext} from './plugins/service-context';
 import {prettifyFormat} from './utils/formats';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from './utils/ipc';
 import {setExportMenuItemState} from './menus/utils';
 import {Video} from './video';
 import {ConversionOptions, ExportState, ExportStatus, Format, CreateExportOptions} from './common/types';

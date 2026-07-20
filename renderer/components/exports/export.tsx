@@ -8,7 +8,7 @@ import useConversion from '../../hooks/editor/use-conversion';
 import {ExportStatus} from '../../common/types';
 import {useShowWindow} from '../../hooks/use-show-window';
 import {MenuItem} from '../../utils/menu';
-import {ipcRenderer} from 'electron-better-ipc';
+import {ipcRenderer} from 'utils/ipc';
 
 const stopPropagation = event => event.stopPropagation();
 

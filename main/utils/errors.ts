@@ -1,10 +1,10 @@
 import path from 'path';
+import {inspect} from 'util';
 import {clipboard, shell, app, net} from 'electron';
-import ensureError from 'ensure-error';
 import cleanStack from 'clean-stack';
 import {openNewGitHubIssue} from 'electron-util';
 import got from 'got';
-import delay from 'delay';
+import {setTimeout as delay} from 'timers/promises';
 import macosRelease from './macos-release';
 
 import {windowManager} from '../windows/manager';
@@ -12,6 +12,8 @@ import Sentry, {isSentryEnabled} from './sentry';
 import {InstalledPlugin} from '../plugins/plugin';
 
 const MAX_RETRIES = 10;
+
+const ensureError = (value: unknown) => value instanceof Error ? value : new Error(inspect(value));
 
 const ERRORS_TO_IGNORE = [
   /net::ERR_CONNECTION_TIMED_OUT/,

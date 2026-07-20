@@ -1,7 +1,7 @@
 'use strict';
 
 import {BrowserWindow, Rectangle} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
 import {secureWebPreferences} from './web-preferences';

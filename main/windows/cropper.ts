@@ -2,7 +2,7 @@
 import {windowManager} from './manager';
 import {BrowserWindow, systemPreferences, dialog, screen, Display, app} from 'electron';
 import {is} from 'electron-util';
-import delay from 'delay';
+import {setTimeout as delay} from 'timers/promises';
 
 import {settings} from '../common/settings';
 import {hasMicrophoneAccess, ensureMicrophonePermissions, openSystemPreferences, ensureScreenCapturePermissions} from '../common/system-permissions';

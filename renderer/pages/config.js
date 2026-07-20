@@ -1,6 +1,6 @@
 import React from 'react';
 import {Provider} from '../utils/state-container';
-import {ipcRenderer as ipc} from 'electron-better-ipc';
+import {ipcRenderer as ipc} from 'utils/ipc';
 
 import {ConfigContainer} from '../containers';
 import Config from '../components/config';

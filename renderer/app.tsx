@@ -1,6 +1,6 @@
 import {ComponentType, useEffect} from 'react';
 import classNames from 'classnames';
-import {ipcRenderer} from 'electron-better-ipc';
+import {ipcRenderer} from 'utils/ipc';
 
 import useDarkMode from './hooks/dark-mode';
 import GlobalStyles from './utils/global-styles';

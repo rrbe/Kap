@@ -3,13 +3,13 @@
 import {BrowserWindow, dialog} from 'electron';
 import execa from 'execa';
 import {promises as fs} from 'fs';
-import tempy from 'tempy';
+import {temporaryFile} from './temporary-path';
 import type {Video} from '../video';
 import {generateTimestampedName} from './timestamped-name';
 import ffmpegPath from './ffmpeg-path';
 
 export const generatePreviewImage = async (filePath: string): Promise<{path: string; data: string} | undefined> => {
-  const previewPath = tempy.file({extension: '.jpg'});
+  const previewPath = temporaryFile({extension: '.jpg'});
 
   try {
     await execa(ffmpegPath, [

@@ -1,5 +1,5 @@
 import moment from 'moment';
-import prettyMilliseconds from 'pretty-ms';
+import {formatDuration} from '../utils/format';
 
 export interface ConvertOptions {
   inputPath: string;
@@ -41,7 +41,7 @@ export const extractProgressFromStderr = (stderr: string, conversionStartTime: n
 
       return {
         progress,
-        estimate: prettyMilliseconds(Math.max(msRemaining, 1000), {compact: true})
+        estimate: formatDuration(Math.max(msRemaining, 1000))
       };
     }
 

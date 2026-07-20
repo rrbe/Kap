@@ -1,7 +1,7 @@
 import execa from 'execa';
 import moment from 'moment';
 import PCancelable from 'p-cancelable';
-import tempy from 'tempy';
+import {temporaryFile} from '../utils/temporary-path';
 import path from 'path';
 
 import {track} from '../common/analytics';
@@ -86,7 +86,7 @@ const createProcess = () => {
 export const convert = createProcess();
 
 export const mute = PCancelable.fn(async (inputPath: string, onCancel: PCancelable.OnCancelFunction) => {
-  const mutedPath = tempy.file({extension: path.extname(inputPath)});
+  const mutedPath = temporaryFile({extension: path.extname(inputPath)});
 
   const converter = convert(mutedPath, {shouldTrack: false}, [
     '-i',

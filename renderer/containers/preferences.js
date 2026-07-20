@@ -1,5 +1,5 @@
 import {Container} from '../utils/state-container';
-import {ipcRenderer as ipc} from 'electron-better-ipc';
+import {ipcRenderer as ipc} from 'utils/ipc';
 import {settings} from '../utils/settings';
 
 const SETTINGS_ANALYTICS_BLACKLIST = ['kapturesDir'];

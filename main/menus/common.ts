@@ -1,4 +1,4 @@
-import delay from 'delay';
+import {setTimeout as delay} from 'timers/promises';
 import {app, dialog} from 'electron';
 import {openNewGitHubIssue} from 'electron-util';
 import macosRelease from '../utils/macos-release';
@@ -91,4 +91,3 @@ Workaround:           A workaround for the issue if you've found on. (this will 
 
 <!-- If you have additional information, enter it below. -->
 `;
-

@@ -1,11 +1,11 @@
 import path from 'path';
-import tempy from 'tempy';
 import {Encoding, Format} from '../common/types';
 import {track} from '../common/analytics';
 import h264Converters, {crop as h264Crop} from './h264';
 import {ConvertOptions} from './utils';
 import {getFormatExtension} from '../common/constants';
 import PCancelable, {OnCancelFunction} from 'p-cancelable';
+import {temporaryDirectory, temporaryFile} from '../utils/temporary-path';
 import {convert} from './process';
 import {plugins} from '../plugins';
 import {EditServiceContext} from '../plugins/service-context';
@@ -59,7 +59,7 @@ export const convertTo = (
   track(`file/export/format/${format}`);
 
   const conversionOptions = {
-    outputPath: path.join(tempy.directory(), `${options.defaultFileName}.${getFormatExtension(format)}`),
+    outputPath: path.join(temporaryDirectory(), `${options.defaultFileName}.${getFormatExtension(format)}`),
     ...options
   };
 
@@ -93,7 +93,7 @@ const convertWithEditPlugin = PCancelable.fn(
     let isCanceled = false;
 
     if (options.shouldCrop) {
-      croppedPath = tempy.file({extension: path.extname(options.inputPath)});
+      croppedPath = temporaryFile({extension: path.extname(options.inputPath)});
 
       options.onProgress('Cropping', 0);
 
@@ -140,7 +140,7 @@ const convertWithEditPlugin = PCancelable.fn(
       }
     });
 
-    const editPath = tempy.file({extension: path.extname(croppedPath)});
+    const editPath = temporaryFile({extension: path.extname(croppedPath)});
 
     const editPlugin = plugins.editPlugins.find(plugin => {
       return plugin.name === options.editService?.pluginName;

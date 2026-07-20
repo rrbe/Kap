@@ -1,7 +1,7 @@
 import {BrowserWindow} from 'electron';
 import {promisify} from 'util';
 
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import {loadRoute} from '../utils/routes';
 import {track} from '../common/analytics';
 import {windowManager} from './manager';

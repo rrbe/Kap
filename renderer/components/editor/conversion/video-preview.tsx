@@ -5,7 +5,7 @@ import useEditorWindowState from 'hooks/editor/use-editor-window-state';
 import useConversionIdContext from 'hooks/editor/use-conversion-id';
 import {flags} from '../../../utils/flags';
 import {useState} from 'react';
-import {ipcRenderer} from 'electron-better-ipc';
+import {ipcRenderer} from 'utils/ipc';
 
 const VideoPreview = ({conversion, cancel, showInFolder}: {conversion: UseConversionState; cancel: () => any; showInFolder: () => any}) => {
   const {conversionId} = useConversionIdContext();

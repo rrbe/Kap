@@ -1,7 +1,7 @@
 import React from 'react';
 import {Provider} from '../utils/state-container';
 import classNames from 'classnames';
-import {ipcRenderer as ipc} from 'electron-better-ipc';
+import {ipcRenderer as ipc} from 'utils/ipc';
 
 import PreferencesNavigation from '../components/preferences/navigation';
 import WindowHeader from '../components/window-header';
