@@ -1,6 +1,6 @@
 # 现代化基线
 
-记录日期：2026-07-20  
+记录日期：2026-07-20
 基线提交：`c42692fa63ac71ed192e01684beb78a1b864aa88`
 
 ## 环境
@@ -84,6 +84,22 @@ NODE_OPTIONS=--openssl-legacy-provider yarn build-renderer
 | config | 3.76 kB | 159 kB |
 | dialog | 2.17 kB | 99.1 kB |
 | 共享 | - | 96.9 kB |
+
+## 阶段 2：Vite 迁移结果
+
+| 检查 | 结果 |
+| --- | --- |
+| Renderer 构建 | 通过，Vite 8.1.5 构建 246 个模块耗时 0.62 秒 |
+| Renderer 产物 | 943,022 bytes（不含 source map），较基线减少 46.8% |
+| 共享入口 | 202.70 kB，gzip 64.59 kB；各窗口页面继续按需加载 |
+| 开发态 smoke test | 通过，双显示器 Cropper 均完成渲染；首次打开 1,378 ms |
+| 自动化测试 | 29 tests 通过，63.06 秒 |
+| lint | Node 20.19.4 下通过，保留 18 个既有 warning |
+| arm64 目录包 | 通过，`Kap.app` 主程序为 Mach-O arm64，包内包含 Vite 入口和 20 个 JS chunk |
+
+生产包中已不存在 `next` 和 `electron-next`。Vite 只构建静态文件，Electron 继续通过 `loadFile` 加载，不会启动本地 Web 服务。
+
+首次 Cropper 数据包含 Vite 开发服务器的冷启动和依赖预构建开销；阶段 1 的窗口复用收益应以同一进程内第二次打开的数据衡量，不能把这项开发态数据等同于生产启动性能。
 
 ## 运行时性能记录
 

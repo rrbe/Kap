@@ -1,17 +1,41 @@
-import {app, BrowserWindow} from 'electron';
+import {app, BrowserWindow, ipcMain, IpcMainEvent} from 'electron';
 import {is} from 'electron-util';
 
-export const loadRoute = (window: BrowserWindow, routeName: string, {openDevTools}: {openDevTools?: boolean} = {}) => {
+export const loadRoute = async (window: BrowserWindow, routeName: string, {openDevTools}: {openDevTools?: boolean} = {}) => {
+  let onReady: (event: IpcMainEvent) => void;
+  let onClosed: () => void;
+  const ready = new Promise<void>((resolve, reject) => {
+    onReady = event => {
+      if (event.sender === window.webContents) {
+        resolve();
+      }
+    };
+
+    onClosed = () => reject(new Error(`Window closed before renderer route "${routeName}" was ready`));
+
+    ipcMain.on('renderer-ready', onReady);
+
+    window.once('closed', onClosed);
+  });
+
+  let loading: Promise<void>;
   if (is.development) {
-    const loading = window.loadURL(`http://localhost:8000/${routeName}`);
+    loading = window.loadURL(`http://localhost:8000/?route=${encodeURIComponent(routeName)}`);
     window.webContents.openDevTools({mode: 'detach'});
-    return loading;
   } else {
-    const loading = window.loadFile(`${app.getAppPath()}/renderer/out/${routeName}.html`);
+    loading = window.loadFile(`${app.getAppPath()}/renderer/out/index.html`, {
+      query: {route: routeName}
+    });
     if (openDevTools) {
       window.webContents.openDevTools({mode: 'detach'});
     }
+  }
 
-    return loading;
+  try {
+    await loading;
+    await ready;
+  } finally {
+    ipcMain.removeListener('renderer-ready', onReady!);
+    window.removeListener('closed', onClosed!);
   }
 };

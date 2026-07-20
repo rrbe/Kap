@@ -10,7 +10,7 @@ const DIALOG_MIN_HEIGHT = 150;
 
 export type DialogOptions = any;
 
-const showDialog = async (options: DialogOptions) => new Promise<number | void>(resolve => {
+const showDialog = async (options: DialogOptions) => new Promise<number | void>((resolve, reject) => {
   const dialogWindow = new BrowserWindow({
     width: 1,
     height: 1,
@@ -30,8 +30,6 @@ const showDialog = async (options: DialogOptions) => new Promise<number | void>(
       contextIsolation: false
     }
   });
-
-  loadRoute(dialogWindow, 'dialog');
 
   let buttons: any[];
   let wasActionTaken;
@@ -89,10 +87,16 @@ const showDialog = async (options: DialogOptions) => new Promise<number | void>(
     resolve(value);
   };
 
-  dialogWindow.webContents.on('did-finish-load', async () => {
-    await updateUi(options);
-    dialogWindow.show();
-  });
+  loadRoute(dialogWindow, 'dialog')
+    .then(async () => {
+      await updateUi(options);
+      dialogWindow.show();
+    })
+    .catch(error => {
+      unsubscribe();
+      dialogWindow.destroy();
+      reject(error);
+    });
 });
 
 windowManager.setDialog({

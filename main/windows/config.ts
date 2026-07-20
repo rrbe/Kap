@@ -28,12 +28,9 @@ const openConfigWindow = async (pluginName: string) => {
     }
   });
 
-  loadRoute(configWindow, 'config');
-
-  configWindow.webContents.on('did-finish-load', async () => {
-    await ipc.callRenderer(configWindow, 'plugin', pluginName);
-    configWindow.show();
-  });
+  await loadRoute(configWindow, 'config');
+  await ipc.callRenderer(configWindow, 'plugin', pluginName);
+  configWindow.show();
 
   await pEvent(configWindow, 'closed');
 };
@@ -58,12 +55,9 @@ const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, 
     }
   });
 
-  loadRoute(configWindow, 'config');
-
-  configWindow.webContents.on('did-finish-load', async () => {
-    await ipc.callRenderer(configWindow, 'edit-service', {pluginName, serviceTitle});
-    configWindow.show();
-  });
+  await loadRoute(configWindow, 'config');
+  await ipc.callRenderer(configWindow, 'edit-service', {pluginName, serviceTitle});
+  configWindow.show();
 
   await pEvent(configWindow, 'closed');
 };

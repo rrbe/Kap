@@ -25,8 +25,6 @@ import {windowManager} from './windows/manager';
 import {setupProtocol} from './utils/protocol';
 import {stopRecordingWithNoEdit} from './aperture';
 
-const prepareNext = require('electron-next');
-
 const filesToOpen: string[] = [];
 
 let onExitCleanupComplete = false;
@@ -93,8 +91,6 @@ const checkForUpdates = () => {
 
   // Ensure the app is in the Applications folder
   enforceMacOSAppLocation();
-
-  await prepareNext('./renderer');
 
   // Ensure all plugins are up to date
   initializePlugins();

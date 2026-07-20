@@ -120,18 +120,6 @@ const openCropper = async (display: Display, activeDisplayId?: number) => {
 
   cropper.setAlwaysOnTop(true, 'screen-saver', 1);
 
-  cropper.webContents.on('did-finish-load', () => {
-    if (!isOpen || cropper.isDestroyed()) {
-      return;
-    }
-
-    const currentDisplay = screen.getAllDisplays().find(display => display.id === id);
-    if (currentDisplay) {
-      const currentActiveDisplayId = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id;
-      sendDisplayInfo(cropper, currentDisplay, currentActiveDisplayId);
-    }
-  });
-
   cropper.on('close', event => {
     event.preventDefault();
     hideAllCroppers();
@@ -145,6 +133,13 @@ const openCropper = async (display: Display, activeDisplayId?: number) => {
 
   try {
     await loadRoute(cropper, 'cropper');
+    if (isOpen && !cropper.isDestroyed()) {
+      const currentDisplay = screen.getAllDisplays().find(display => display.id === id);
+      if (currentDisplay) {
+        const currentActiveDisplayId = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id;
+        sendDisplayInfo(cropper, currentDisplay, currentActiveDisplayId);
+      }
+    }
   } catch (error) {
     destroyCropper(id);
     throw error;
@@ -213,7 +208,7 @@ const openCropperWindow = async () => {
       }
     }
 
-    await Promise.all(displays.map(display => openCropper(display, activeDisplayId)));
+    await Promise.all(displays.map(async display => openCropper(display, activeDisplayId)));
 
     for (const cropper of croppers.values()) {
       cropper.setIgnoreMouseEvents(false);

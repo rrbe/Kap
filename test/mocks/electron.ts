@@ -21,11 +21,13 @@ export const app = Object.assign(new EventEmitter(), {
 });
 
 export const browserWindows: BrowserWindow[] = [];
+export const ipcMain = new EventEmitter();
 
 export class BrowserWindow extends EventEmitter {
   destroyed = false;
   hidden = false;
   bounds: any;
+  loadedUrl?: string;
   webContents = Object.assign(new EventEmitter(), {
     send: sinon.fake(),
     openDevTools: sinon.fake()
@@ -38,6 +40,10 @@ export class BrowserWindow extends EventEmitter {
   }
 
   setAlwaysOnTop = sinon.fake();
+
+  loadURL = sinon.fake(async (url: string) => {
+    this.loadedUrl = url;
+  });
 
   setBounds = (bounds: any) => {
     this.bounds = bounds;

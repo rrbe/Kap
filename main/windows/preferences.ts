@@ -1,6 +1,5 @@
 import {BrowserWindow} from 'electron';
 import {promisify} from 'util';
-import pEvent from 'p-event';
 
 import {ipcMain as ipc} from 'electron-better-ipc';
 import {loadRoute} from '../utils/routes';
@@ -51,9 +50,7 @@ const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
     prefsWindow = undefined;
   });
 
-  loadRoute(prefsWindow, 'preferences');
-
-  await pEvent(prefsWindow.webContents, 'did-finish-load');
+  await loadRoute(prefsWindow, 'preferences');
 
   if (options) {
     ipc.callRenderer(prefsWindow, 'options', options);

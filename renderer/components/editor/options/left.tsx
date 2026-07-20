@@ -3,7 +3,7 @@ import KeyboardNumberInput from '../../keyboard-number-input';
 import Slider from './slider';
 import OptionsContainer from '../options-container';
 import {useState, useEffect, useMemo} from 'react';
-import * as stringMath from 'string-math';
+import stringMath from 'string-math';
 import VideoMetadataContainer from '../video-metadata-container';
 import {shake} from '../../../utils/inputs';
 import Select, {Separator} from './select';

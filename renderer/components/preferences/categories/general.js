@@ -1,7 +1,6 @@
 import electron from 'electron';
 import React from 'react';
 import PropTypes from 'prop-types';
-import tildify from 'tildify';
 
 import {connect, PreferencesContainer} from '../../../containers';
 
@@ -65,7 +64,8 @@ class General extends React.Component {
       value: device.id
     }));
 
-    const kapturesDirPath = tildify(kapturesDir);
+    const homeDirectory = electron.remote.app.getPath('home');
+    const kapturesDirPath = kapturesDir === homeDirectory || kapturesDir.startsWith(`${homeDirectory}/`) ? kapturesDir.replace(homeDirectory, '~') : kapturesDir;
     const tabIndex = category === 'general' ? 0 : -1;
     const fpsOptions = [{label: '30 FPS', value: false}, {label: '60 FPS', value: true}];
 
