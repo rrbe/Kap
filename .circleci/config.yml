@@ -42,6 +42,14 @@ jobs:
           name: Check arm64 package architecture
           command: pnpm check:app-architecture dist/mac-arm64/Kap.app arm64
       - run:
+          name: Verify signed arm64 release
+          command: |
+            if [[ -n "${CIRCLE_TAG:-}" ]]; then
+              codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Kap.app
+              spctl --assess --verbose --type exec dist/mac-arm64/Kap.app
+              xcrun stapler validate dist/mac-arm64/Kap.app
+            fi
+      - run:
           name: Collect arm64 artifacts
           command: |
             mkdir -p workspace/arm64
@@ -93,6 +101,14 @@ jobs:
       - run:
           name: Check x64 package architecture
           command: pnpm check:app-architecture dist/mac/Kap.app x64
+      - run:
+          name: Verify signed x64 release
+          command: |
+            if [[ -n "${CIRCLE_TAG:-}" ]]; then
+              codesign --verify --deep --strict --verbose=2 dist/mac/Kap.app
+              spctl --assess --verbose --type exec dist/mac/Kap.app
+              xcrun stapler validate dist/mac/Kap.app
+            fi
       - run:
           name: Collect x64 artifacts
           command: |
