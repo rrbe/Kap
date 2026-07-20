@@ -323,7 +323,7 @@ app.on('before-quit', destroyAllCroppers);
 
 app.on('browser-window-created', () => {
   if (!isCropperOpen()) {
-    app.dock.show();
+    app.dock?.show();
   }
 });
 

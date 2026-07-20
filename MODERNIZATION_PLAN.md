@@ -5,8 +5,8 @@
 - [x] 阶段 0：建立可复现基线（`7abd968`）
 - [x] 阶段 1：复用 Cropper 窗口并缓存音频设备（`dfb2aa2`）
 - [x] 阶段 2：用 Vite 替换 Next.js（`607fbbd`）
-- [x] 阶段 3：移除 remote，建立安全 IPC 边界
-- [ ] 阶段 4：升级 Electron
+- [x] 阶段 3：移除 remote，建立安全 IPC 边界（`c445334`）
+- [x] 阶段 4：升级 Electron
 - [ ] 阶段 5：优化 ARM 导出管线
 - [ ] 阶段 6：迁移录屏到 ScreenCaptureKit
 - [ ] 阶段 7：删除和升级其余依赖，迁移 pnpm
@@ -143,6 +143,13 @@ Vite renderer
 - `process.arch` 在 arm64 包中为 `arm64`，应用无需 Rosetta。
 - 冷启动、窗口创建和内存数据不劣于阶段 1 基线。
 - 签名、公证、DMG、协议唤起和自动更新 smoke test 通过。
+
+### 实施结果
+
+- Electron 已升级到 43.1.1，配套升级 electron-builder、updater、log、store 和 util。
+- 所有 BrowserWindow 进一步启用 sandbox；删除旧 `file://` 协议 workaround 和调试用 DYLD entitlement。
+- electron-builder 改用内置公证配置；本地 arm64 目录包已通过签名校验，但当前环境没有 Apple 公证凭据，因此真实公证、DMG、协议唤起和自动更新发布链路统一留到阶段 8 验证。
+- 最低系统版本已由 macOS 10.12 提高到 12.0；阶段 6 再决定是否随 ScreenCaptureKit 提高到 13。
 
 ## 阶段 5：优化 ARM 导出管线
 

@@ -117,6 +117,25 @@ NODE_OPTIONS=--openssl-legacy-provider yarn build-renderer
 
 迁移中发现 `electron-timber` 会为后创建的窗口注册一份依赖 `remote` 的 session preload，导致 Preferences 的安全 preload 失效。该日志桥接不是产品功能，因此直接删除。Preferences 的打开动作也改为命名 IPC，不再尝试把 BrowserWindow 作为响应序列化；调整后窗口能在隔离上下文中正常挂载。
 
+## 阶段 4：Electron 43 升级结果
+
+| 检查 | 结果 |
+| --- | --- |
+| Electron 运行时 | 43.1.1，Node 24.18.0，Chromium 150.0.7871.114 |
+| arm64 运行证明 | 开发 Electron 和打包后的 Kap 均报告 `process.arch === 'arm64'`；主程序及 Electron Framework 均为 Mach-O arm64 |
+| Renderer 隔离 | 所有 BrowserWindow 在 preload、context isolation 基础上进一步启用 sandbox |
+| 旧兼容代码 | 删除 `enableRemoteModule`、自定义 `file://` 协议放行以及调试用 DYLD entitlement |
+| 配套依赖 | electron-builder 26.15.3、electron-updater 6.8.9、electron-log 5.4.4、electron-store 8.2.0、electron-util 0.17.2 |
+| 自动化检查 | 30 tests 通过，70.75 秒；TypeScript、Vite 构建通过；Node 20.19.4 下 lint 仅保留既有 warning |
+| arm64 目录包 | 通过，379 MB；`codesign --verify --deep --strict` 通过，最低系统版本为 macOS 12.0 |
+| 公证 | 已改用 electron-builder 内置 `mac.notarize`；本机没有 Apple 公证凭据，构建明确跳过，未宣称通过 |
+
+Electron 43 的框架和资源使目录包由阶段 3 的 289 MB 增至 379 MB，增加约 31%。这项回归不影响原生架构结论，但需要在阶段 8 检查语言资源和最终 DMG 压缩结果，不能通过未经验证的签名忽略规则掩盖。
+
+完整签名打包耗时 546.31 秒，主要时间消耗在逐文件签名。删除协议 workaround 后，开发态 Editor 仍能直接加载本地录制文件，视频 `readyState` 为 4。Cropper、Editor、Preferences 和窗口菜单在 Electron 43 sandbox 中完成 smoke test，Renderer 内 `window.require` 与 `window.process` 仍为 `undefined`。
+
+最低系统版本已从 macOS 10.12 提高到 12.0，这是 Electron 43 的运行要求。阶段 6 仍需单独决定是否为 ScreenCaptureKit 将最低版本提高到 macOS 13。
+
 ## 运行时性能记录
 
 自动化基线目前覆盖转换管线和构建管线。以下 GUI 指标需要在阶段 1 的开发计时日志加入后，在相同显示器配置上补录；旧版本没有可靠埋点，人工秒表不足以区分窗口创建、页面加载和显示耗时。

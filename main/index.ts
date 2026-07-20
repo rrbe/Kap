@@ -20,7 +20,6 @@ import {hasActiveRecording, cleanPastRecordings} from './recording-history';
 import {setupRemoteStates} from './remote-states';
 import {setUpExportsListeners} from './export';
 import {windowManager} from './windows/manager';
-import {setupProtocol} from './utils/protocol';
 import {stopRecordingWithNoEdit} from './aperture';
 import {setupPreloadApi} from './preload-api';
 
@@ -85,9 +84,7 @@ const checkForUpdates = () => {
   // Initialize remote states
   setupRemoteStates();
 
-  setupProtocol();
-
-  app.dock.hide();
+  app.dock?.hide();
   app.setAboutPanelOptions({copyright: 'Copyright © Wulkano'});
 
   // Ensure the app is in the Applications folder
@@ -121,9 +118,8 @@ const checkForUpdates = () => {
   checkForUpdates();
 })();
 
-app.on('window-all-closed', (event: any) => {
-  app.dock.hide();
-  event.preventDefault();
+app.on('window-all-closed', () => {
+  app.dock?.hide();
 });
 
 app.on('will-finish-launching', () => {

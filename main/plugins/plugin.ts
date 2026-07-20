@@ -154,9 +154,7 @@ export class InstalledPlugin extends BasePlugin {
 
   openConfig = () => windowManager.config?.open(this.name);
 
-  openConfigInEditor = () => {
-    return this.config.openInEditor();
-  };
+  openConfigInEditor = async () => this.config.openInEditor();
 
   private readonly getSetEnableFunction = (service: RecordService) => async (enabled: boolean) => {
     const isEnabled = recordPluginServiceState.get(this.getRecordServiceKey(service), false);

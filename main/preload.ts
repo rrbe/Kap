@@ -1,9 +1,36 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 import {contextBridge, ipcRenderer} from 'electron';
-import {deserializeError, serializeError} from 'serialize-error';
 import type {KapApi} from './common/types/preload';
 
-const ipcUtil = require('electron-better-ipc/source/util');
+const getRendererSendChannel = (windowId: number, channel: string) => `%better-ipc-send-channel-${windowId}-${channel}`;
+const getResponseChannels = (channel: string) => {
+  const id = `${Date.now()}-${Math.random()}`;
+  return {
+    sendChannel: `%better-ipc-send-channel-${channel}`,
+    dataChannel: `%better-ipc-response-data-channel-${channel}-${id}`,
+    errorChannel: `%better-ipc-response-error-channel-${channel}-${id}`
+  };
+};
+
+const serializeError = (value: any) => value instanceof Error ? {
+  ...value,
+  name: value.name,
+  message: value.message,
+  stack: value.stack
+} : value;
+
+const deserializeError = (value: any) => {
+  if (value instanceof Error) {
+    return value;
+  }
+
+  const error = new Error(value?.message ?? String(value));
+  if (value && typeof value === 'object') {
+    Object.assign(error, value);
+  }
+
+  return error;
+};
 
 const allowedCallMainChannels = new Set([
   'create-export',
@@ -71,7 +98,7 @@ const removeListener = (id: number) => {
 const callMain = <DataType, ReturnType = unknown>(channel: string, data?: DataType) => {
   assertChannel(channel, allowedCallMainChannels, [remoteStateChannel, dialogActionChannel]);
   return new Promise<ReturnType>((resolve, reject) => {
-    const {sendChannel, dataChannel, errorChannel} = ipcUtil.getResponseChannels(channel);
+    const {sendChannel, dataChannel, errorChannel} = getResponseChannels(channel);
     const cleanup = () => {
       ipcRenderer.removeListener(dataChannel, onData);
       ipcRenderer.removeListener(errorChannel, onError);
@@ -95,7 +122,7 @@ const callMain = <DataType, ReturnType = unknown>(channel: string, data?: DataTy
 
 const answerMain = <DataType, ReturnType = unknown>(channel: string, callback: (data: DataType) => ReturnType | PromiseLike<ReturnType>) => {
   assertChannel(channel, allowedAnswerMainChannels, [remoteStateChannel]);
-  const sendChannel = ipcUtil.getRendererSendChannel(sync('window-id'), channel);
+  const sendChannel = getRendererSendChannel(sync('window-id'), channel);
   const listener = async (_event: Electron.IpcRendererEvent, data: any) => {
     try {
       ipcRenderer.send(data.dataChannel, await callback(data.userData));
