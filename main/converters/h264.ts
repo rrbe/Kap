@@ -9,12 +9,32 @@ import fs from 'fs';
 
 const hardwareAcceleratedExports = () => process.platform === 'darwin' && settings.get('hardwareAcceleratedExports', true);
 
-export const getVideoEncoderArgs = (format: Format, useHardwareAcceleration = hardwareAcceleratedExports()) => {
-  if (format === Format.mp4) {
-    return useHardwareAcceleration ? ['-c:v', 'h264_videotoolbox', '-q:v', '65'] : ['-c:v', 'libx264'];
+type HardwareEncoderOptions = Pick<ConvertOptions, 'width' | 'height' | 'fps'> & {
+  architecture?: NodeJS.Architecture;
+};
+
+const getVideoBitrate = ({width, height, fps}: HardwareEncoderOptions) =>
+  Math.max(1_000_000, Math.round(width * height * fps * 0.1)).toString();
+
+export const getVideoEncoderArgs = (
+  format: Format,
+  useHardwareAcceleration = hardwareAcceleratedExports(),
+  options: HardwareEncoderOptions = {width: 1920, height: 1080, fps: 30}
+) => {
+  const codec = format === Format.mp4 ? 'h264_videotoolbox' : 'hevc_videotoolbox';
+
+  if (useHardwareAcceleration) {
+    // The Intel ffmpeg-static build rejects VideoToolbox quality-scale options.
+    return options.architecture === 'x64' || (options.architecture === undefined && process.arch === 'x64')
+      ? ['-c:v', codec, '-b:v', getVideoBitrate(options)]
+      : ['-c:v', codec, '-q:v', '65'];
   }
 
-  return useHardwareAcceleration ? ['-c:v', 'hevc_videotoolbox', '-q:v', '65'] : ['-c:v', 'libx265', '-preset', 'medium'];
+  if (format === Format.mp4) {
+    return ['-c:v', 'libx264'];
+  }
+
+  return ['-c:v', 'libx265', '-preset', 'medium'];
 };
 
 // `time ffmpeg -i original.mp4 -vf fps=30,scale=480:-1::flags=lanczos,palettegen palette.png`
@@ -104,7 +124,7 @@ const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
-  getVideoEncoderArgs(Format.mp4),
+  getVideoEncoderArgs(Format.mp4, hardwareAcceleratedExports(), options),
   {
     args: ['-an'],
     if: options.shouldMute
@@ -205,7 +225,7 @@ const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
-  getVideoEncoderArgs(Format.hevc),
+  getVideoEncoderArgs(Format.hevc, hardwareAcceleratedExports(), options),
   '-c:a', 'libopus',
   '-tag:v', 'hvc1', // Metadata for macOS
   {
