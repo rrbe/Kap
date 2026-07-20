@@ -12,21 +12,23 @@
     "url": "https://wulkano.com"
   },
   "private": true,
+  "packageManager": "pnpm@10.33.2",
   "main": "dist-js/index.js",
   "scripts": {
     "lint": "xo",
     "lint:fix": "xo --fix",
     "test:main": "TS_NODE_PROJECT=test/tsconfig.json ava",
-    "test:ci": "yarn test:main --tap | tap-xunit > ~/reports/ava.xml",
-    "test": "yarn lint && yarn test:main",
-    "start": "yarn build-main && node scripts/dev.mjs",
+    "test:ci": "pnpm test:main --tap | tap-xunit > ~/reports/ava.xml",
+    "test": "pnpm lint && pnpm test:main",
+    "start": "pnpm build-main && node scripts/dev.mjs",
     "build-capture-helper": "node scripts/build-capture-helper.mjs",
-    "build-main": "yarn build-capture-helper && tsc",
+    "build-main": "pnpm build-capture-helper && tsc",
     "build-renderer": "vite build --config renderer/vite.config.ts",
-    "build": "yarn build-main && yarn build-renderer",
-    "dist": "npm run build && electron-builder",
-    "pack": "npm run build && electron-builder --dir",
+    "build": "pnpm build-main && pnpm build-renderer",
+    "dist": "pnpm build && electron-builder",
+    "pack": "pnpm build && electron-builder --dir",
     "postinstall": "electron-builder install-app-deps",
+    "prepare": "husky",
     "sentry-version": "echo \"$npm_package_name@$npm_package_version\"",
     "dev": "vite --config renderer/vite.config.ts"
   },
@@ -109,7 +111,7 @@
     "eslint-config-xo-typescript": "^0.38.0",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^4.2.5",
+    "husky": "^9.1.7",
     "module-alias": "^2.2.2",
     "rolldown": "~1.1.5",
     "run-electron": "^1.0.0",
@@ -140,7 +142,7 @@
     "timeout": "5m",
     "failFast": true,
     "require": [
-      "ts-node/register",
+      "ts-node/register/transpile-only",
       "module-alias/register"
     ]
   },
@@ -162,6 +164,15 @@
       "react/static-property-placement": "off",
       "react/react-in-jsx-scope": "off",
       "react/boolean-prop-naming": "off",
+      "react/no-unknown-property": [
+        "error",
+        {
+          "ignore": [
+            "global",
+            "jsx"
+          ]
+        }
+      ],
       "unicorn/prefer-set-has": "off",
       "ava/use-test": "off",
       "import/extensions": "off",
@@ -206,6 +217,8 @@
           "@typescript-eslint/restrict-template-expressions": "off",
           "no-await-in-loop": "off",
           "react/prop-types": "off",
+          "react/no-unused-prop-types": "off",
+          "react/prefer-read-only-props": "off",
           "@typescript-eslint/no-confusing-void-expression": "off",
           "@typescript-eslint/indent": [
             "error",
@@ -227,11 +240,15 @@
       }
     ]
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint",
-      "pre-push": "yarn lint"
-    }
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "ffmpeg-static",
+      "gifsicle"
+    ],
+    "ignoredBuiltDependencies": [
+      "electron-winstaller",
+      "yarn"
+    ]
   },
   "build": {
     "appId": "com.wulkano.kap",

@@ -289,7 +289,7 @@ export const crop = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-export default new Map([
+const converters = new Map([
   [Format.gif, convertToGif],
   [Format.mp4, convertToMp4],
   [Format.hevc, convertToHevc],
@@ -297,3 +297,5 @@ export default new Map([
   [Format.apng, convertToApng],
   [Format.av1, convertToAv1]
 ]);
+
+export default converters;

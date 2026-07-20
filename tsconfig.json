@@ -8,6 +8,9 @@
     "allowJs": true,
     "sourceMap": true,
     "inlineSources": true,
+    "types": [
+      "node"
+    ],
     "lib": [
       "esnext"
     ]
