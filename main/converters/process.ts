@@ -11,7 +11,7 @@ import {settings} from '../common/settings';
 
 import ffmpegPath from '../utils/ffmpeg-path';
 
-const gifsicle = require('gifsicle');
+const {default: gifsicle} = require('gifsicle');
 const gifsiclePath = util.fixPathForAsarUnpack(gifsicle);
 
 enum Mode {
