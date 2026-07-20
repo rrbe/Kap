@@ -305,13 +305,7 @@
           }
         ]
       },
-      "target": {
-        "target": "default",
-        "arch": [
-          "x64",
-          "arm64"
-        ]
-      }
+      "target": "default"
     },
     "dmg": {
       "artifactName": "${productName}-${version}-${arch}.${ext}",
