@@ -5,6 +5,7 @@ export interface ConvertOptions {
   inputPath: string;
   outputPath: string;
   shouldCrop: boolean;
+  isUnedited?: boolean;
   startTime: number;
   endTime: number;
   width: number;

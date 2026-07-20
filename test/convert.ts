@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import sinon from 'sinon';
 import uniqueString from 'unique-string';
+import {CancelError} from 'p-cancelable';
 
 const test = testAny as TestInterface<{outputPath: string}>;
 
@@ -23,7 +24,8 @@ mockImport('../plugins/service-context', 'service-context');
 mockImport('../plugins', 'plugins');
 const {settings} = mockImport('../common/settings', 'settings');
 
-import {convertTo} from '../main/converters';
+import {convertTo, copyUneditedMp4} from '../main/converters';
+import {getVideoEncoderArgs} from '../main/converters/h264';
 import {ConvertOptions} from '../main/converters/utils';
 
 test.afterEach.always(t => {
@@ -43,6 +45,58 @@ const convert = async (format: Format, options: SetOptional<Except<ConvertOption
 };
 
 // MP4
+
+test('mp4: unchanged input is copied without transcoding', async t => {
+  const onProgress = sinon.fake();
+
+  t.context.outputPath = await convert(Format.mp4, {
+    shouldMute: false,
+    inputPath: input,
+    fps: 60,
+    width: 2560,
+    height: 1440,
+    startTime: 0,
+    endTime: 106.78,
+    shouldCrop: false,
+    isUnedited: true,
+    onProgress
+  });
+
+  t.deepEqual(await fs.promises.readFile(t.context.outputPath), await fs.promises.readFile(input));
+  t.true(onProgress.calledWith('Copying', 0));
+  t.true(onProgress.calledWith('Copying', 1));
+});
+
+test('mp4: canceling a copy removes the partial output', async t => {
+  t.context.outputPath = path.join(path.dirname(input), getRandomFileName());
+  const copy = copyUneditedMp4({
+    inputPath: input,
+    outputPath: t.context.outputPath,
+    fps: 60,
+    width: 2560,
+    height: 1440,
+    startTime: 0,
+    endTime: 106.78,
+    shouldCrop: false,
+    shouldMute: false,
+    onProgress: sinon.fake(),
+    onCancel: sinon.fake()
+  });
+
+  copy.cancel();
+  await t.throwsAsync(copy, {instanceOf: CancelError});
+  await new Promise(resolve => {
+    setTimeout(resolve, 100);
+  });
+  t.false(fs.existsSync(t.context.outputPath));
+});
+
+test('selects VideoToolbox without removing software encoders', t => {
+  t.deepEqual(getVideoEncoderArgs(Format.mp4, true), ['-c:v', 'h264_videotoolbox', '-q:v', '65']);
+  t.deepEqual(getVideoEncoderArgs(Format.hevc, true), ['-c:v', 'hevc_videotoolbox', '-q:v', '65']);
+  t.deepEqual(getVideoEncoderArgs(Format.mp4, false), ['-c:v', 'libx264']);
+  t.deepEqual(getVideoEncoderArgs(Format.hevc, false), ['-c:v', 'libx265', '-preset', 'medium']);
+});
 
 test('mp4: retina with sound', async t => {
   const onProgress = sinon.fake();

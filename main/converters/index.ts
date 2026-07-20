@@ -11,6 +11,25 @@ import {plugins} from '../plugins';
 import {EditServiceContext} from '../plugins/service-context';
 import {settings} from '../common/settings';
 import {Except} from 'type-fest';
+import fs from 'fs';
+
+export const copyUneditedMp4 = PCancelable.fn(async (options: ConvertOptions, onCancel: OnCancelFunction) => {
+  let isCanceled = false;
+  onCancel(() => {
+    isCanceled = true;
+  });
+
+  options.onProgress('Copying', 0);
+  await fs.promises.copyFile(options.inputPath, options.outputPath, fs.constants.COPYFILE_FICLONE);
+
+  if (isCanceled) {
+    await fs.promises.unlink(options.outputPath).catch(() => undefined);
+  } else {
+    options.onProgress('Copying', 1);
+  }
+
+  return options.outputPath;
+});
 
 const converters = new Map([
   [Encoding.h264, h264Converters]
@@ -43,6 +62,10 @@ export const convertTo = (
     outputPath: path.join(tempy.directory(), `${options.defaultFileName}.${getFormatExtension(format)}`),
     ...options
   };
+
+  if (format === Format.mp4 && encoding === Encoding.h264 && options.isUnedited && !options.shouldMute && !options.editService) {
+    return copyUneditedMp4(conversionOptions);
+  }
 
   if (options.editService) {
     const croppingHandler = croppingHandlers.get(encoding);

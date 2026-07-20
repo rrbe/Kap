@@ -6,8 +6,8 @@
 - [x] 阶段 1：复用 Cropper 窗口并缓存音频设备（`dfb2aa2`）
 - [x] 阶段 2：用 Vite 替换 Next.js（`607fbbd`）
 - [x] 阶段 3：移除 remote，建立安全 IPC 边界（`c445334`）
-- [x] 阶段 4：升级 Electron
-- [ ] 阶段 5：优化 ARM 导出管线
+- [x] 阶段 4：升级 Electron（`0a5d1eb`）
+- [x] 阶段 5：优化 ARM 导出管线
 - [ ] 阶段 6：迁移录屏到 ScreenCaptureKit
 - [ ] 阶段 7：删除和升级其余依赖，迁移 pnpm
 - [ ] 阶段 8：跨架构回归与发布准备
@@ -156,7 +156,7 @@ Vite renderer
 ### 工作内容
 
 - 替换或重新打包 FFmpeg，保证 arm64 DMG 内为原生 arm64/universal 二进制。
-- 删除 x86_64 gifsicle；优先使用原生 gifski 直接生成 GIF，避免“FFmpeg 两遍生成 + gifsicle 再压缩”的三段管线。
+- 删除 x86_64-only GIF 工具；优先选择能保留现有无损/有损选项且具有 arm64 构建的最小替代方案。
 - 为完全未编辑的 H.264 MP4 增加直拷快路径；只有裁剪、缩放、变速、静音或转码时才运行 FFmpeg。
 - 为 H.264/HEVC 增加 VideoToolbox 快速模式，同时保留软件编码高质量模式。
 - 保持取消、进度、错误提示和临时文件清理行为。
@@ -167,6 +167,14 @@ Vite renderer
 - 未编辑 H.264 MP4 导出接近文件复制耗时，且音视频 metadata 可正常播放。
 - 硬件编码模式在 Apple Silicon 上实际使用 VideoToolbox，并记录速度、CPU 和文件大小对比。
 - 现有转换测试扩展到直拷、裁剪、静音和取消路径。
+
+### 实施结果
+
+- FFmpeg 升级到 6.0 arm64，gifsicle 升级为同时包含 arm64/x64 的 universal 构建，打包后的导出工具不再依赖 Rosetta。
+- 没有引入 gifski：它需要增加 PNG 帧中间管线并改变现有有损压缩行为，而 universal gifsicle 已直接解决本阶段的架构问题。
+- 未编辑、未静音、无插件的 H.264 MP4 使用文件系统 clone/copy 快路径；编辑器会明确检测尺寸、帧率和时间范围变化。
+- H.264/HEVC 提供 VideoToolbox 模式，同时保留 libx264/libx265 软件编码；偏好设置允许用户在低 CPU 与软件编码之间切换。
+- 30 秒 1080p 实测中，VideoToolbox 的 HEVC 墙钟耗时降低 67%，H.264 的 CPU 时间降低 61%；H.264 墙钟耗时在当前低动态测试素材上反而增加 41%，因此不把硬件模式描述为所有场景都更快。
 
 ## 阶段 6：迁移录屏到 ScreenCaptureKit
 

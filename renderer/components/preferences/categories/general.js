@@ -45,6 +45,7 @@ class General extends React.Component {
       updateShortcut,
       toggleShortcuts,
       category,
+      hardwareAcceleratedExports,
       lossyCompression,
       shortcuts,
       shortcutMap
@@ -182,6 +183,17 @@ class General extends React.Component {
           <Button tabIndex={tabIndex} title="Choose" onClick={pickKapturesDir}/>
         </Item>
         <Item
+          key="hardwareAcceleratedExports"
+          title="Hardware-accelerated exports"
+          subtitle="Reduce H.264 and HEVC export CPU usage with VideoToolbox"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={hardwareAcceleratedExports}
+            onClick={() => toggleSetting('hardwareAcceleratedExports')}
+          />
+        </Item>
+        <Item
           key="lossyCompression"
           parentItem
           title="Lossy GIF compression"
@@ -220,6 +232,7 @@ General.propTypes = {
   category: PropTypes.string,
   shortcutMap: PropTypes.object,
   shortcuts: PropTypes.object,
+  hardwareAcceleratedExports: PropTypes.bool,
   lossyCompression: PropTypes.bool
 };
 
@@ -238,6 +251,7 @@ export default connect(
     allowAnalytics,
     loopExports,
     category,
+    hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,
     shortcutMap
@@ -254,6 +268,7 @@ export default connect(
     allowAnalytics,
     loopExports,
     category,
+    hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,
     shortcutMap

@@ -7,6 +7,16 @@ import os from 'os';
 import {Format} from '../common/types';
 import fs from 'fs';
 
+const hardwareAcceleratedExports = () => process.platform === 'darwin' && settings.get('hardwareAcceleratedExports', true);
+
+export const getVideoEncoderArgs = (format: Format, useHardwareAcceleration = hardwareAcceleratedExports()) => {
+  if (format === Format.mp4) {
+    return useHardwareAcceleration ? ['-c:v', 'h264_videotoolbox', '-q:v', '65'] : ['-c:v', 'libx264'];
+  }
+
+  return useHardwareAcceleration ? ['-c:v', 'hevc_videotoolbox', '-q:v', '65'] : ['-c:v', 'libx265', '-preset', 'medium'];
+};
+
 // `time ffmpeg -i original.mp4 -vf fps=30,scale=480:-1::flags=lanczos,palettegen palette.png`
 // `time ffmpeg -i original.mp4 -i palette.png -filter_complex 'fps=30,scale=-1:-1:flags=lanczos[x]; [x][1:v]paletteuse' palette.gif`
 const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PCancelable.OnCancelFunction) => {
@@ -111,6 +121,7 @@ const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
+  getVideoEncoderArgs(Format.mp4),
   {
     args: ['-an'],
     if: options.shouldMute
@@ -214,9 +225,8 @@ const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
-  '-c:v', 'libx265',
+  getVideoEncoderArgs(Format.hevc),
   '-c:a', 'libopus',
-  '-preset', 'medium',
   '-tag:v', 'hvc1', // Metadata for macOS
   {
     args: ['-an'],

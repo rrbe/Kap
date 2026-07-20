@@ -8,6 +8,8 @@ import VideoTimeContainer from '../video-time-container';
 import VideoControlsContainer from '../video-controls-container';
 import useSharePlugins from 'hooks/editor/use-share-plugins';
 import useEditorOptions from 'hooks/editor/use-editor-options';
+import VideoMetadataContainer from '../video-metadata-container';
+import {hasExportEdits} from 'common/export-edits';
 
 const FormatSelect = () => {
   const {formats, format, updateFormat} = OptionsContainer.useContainer();
@@ -127,10 +129,22 @@ const ConvertButton = () => {
   const {filePath} = useEditorWindowState();
   const {startTime, endTime} = VideoTimeContainer.useContainer();
   const {isMuted} = VideoControlsContainer.useContainer();
+  const metadata = VideoMetadataContainer.useContainer();
   const {updatePluginUsage} = useEditorOptions();
 
   const onClick = () => {
-    const shouldCrop = true;
+    const hasEdits = hasExportEdits({
+      width: options.width,
+      height: options.height,
+      fps: options.fps,
+      startTime,
+      endTime
+    }, {
+      width: metadata.width,
+      height: metadata.height,
+      fps: options.originalFps,
+      duration: metadata.duration
+    });
     startConversion({
       filePath,
       conversionOptions: {
@@ -140,7 +154,8 @@ const ConvertButton = () => {
         endTime,
         fps: options.fps,
         shouldMute: isMuted,
-        shouldCrop,
+        shouldCrop: hasEdits,
+        isUnedited: !hasEdits,
         editService: options.editPlugin ? {
           pluginName: options.editPlugin.pluginName,
           serviceTitle: options.editPlugin.title
