@@ -1,7 +1,7 @@
 import {hasMicrophoneAccess} from '../common/system-permissions';
-import * as audioDevices from 'macos-audio-devices';
 import {settings} from '../common/settings';
 import {defaultInputDeviceId} from '../common/constants';
+import {getDefaultInputAudioDevice, getInputAudioDevices} from './system-helper';
 
 const {showError} = require('./errors');
 
@@ -16,7 +16,7 @@ const loadAudioDevices = async (): Promise<AudioDevice[]> => {
   }
 
   try {
-    const devices = await audioDevices.getInputDevices();
+    const devices = await getInputAudioDevices();
 
     return devices.sort((a, b) => {
       if (a.transportType === b.transportType) {
@@ -60,7 +60,7 @@ export const getAudioDevices = async ({refresh = false}: {refresh?: boolean} = {
 
 export const getDefaultInputDevice = () => {
   try {
-    const device = audioDevices.getDefaultInputDevice.sync();
+    const device = getDefaultInputAudioDevice();
     return {
       id: device.uid,
       name: device.name

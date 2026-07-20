@@ -8,7 +8,7 @@ const main = async () => {
   const packagePath = path.resolve('native/capture-helper');
   const apertureCheckout = path.join(packagePath, '.build/checkouts/Aperture');
   const aperturePatch = path.join(packagePath, 'aperture.patch');
-  const outputPath = path.resolve('dist-js/kap-capture');
+  const products = ['kap-capture', 'kap-system'];
   const architectures = ['arm64', 'x86_64'];
 
   await execFileAsync('swift', ['package', '--package-path', packagePath, 'resolve']);
@@ -41,12 +41,16 @@ const main = async () => {
       architecture,
       '--show-bin-path'
     ]);
-    return path.join(stdout.trim(), 'kap-capture');
+    return products.map(product => path.join(stdout.trim(), product));
   }));
 
-  await mkdir(path.dirname(outputPath), {recursive: true});
-  await execFileAsync('lipo', ['-create', ...binaryPaths, '-output', outputPath]);
-  await chmod(outputPath, 0o755);
+  await mkdir(path.resolve('dist-js'), {recursive: true});
+  await Promise.all(products.map(async (product, productIndex) => {
+    const outputPath = path.resolve('dist-js', product);
+    const productBinaries = binaryPaths.map(paths => paths[productIndex]);
+    await execFileAsync('lipo', ['-create', ...productBinaries, '-output', outputPath]);
+    await chmod(outputPath, 0o755);
+  }));
 };
 
 main().catch(error => {

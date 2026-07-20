@@ -1,8 +1,7 @@
 import {Menu, MenuItem} from 'electron';
 import Store from 'electron-store';
 import {windowManager} from '../windows/manager';
-
-const {getWindows, activateWindow} = require('mac-windows');
+import {getWindows, activateWindow} from './system-helper';
 
 export interface MacWindow {
   pid: number;
@@ -34,7 +33,7 @@ const usageHistory = store.get('appUsageHistory', {});
 const isValidApp = ({ownerName}: MacWindow) => !APP_BLACKLIST.includes(ownerName);
 
 const getWindowList = async () => {
-  const windows = await getWindows() as MacWindow[];
+  const windows = await getWindows();
   let maxLastUsed = 0;
 
   return windows.filter(window => isValidApp(window)).map(win => {

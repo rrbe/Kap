@@ -16,6 +16,9 @@ let package = Package(
       dependencies: [
         .product(name: "Aperture", package: "Aperture")
       ]
+    ),
+    .executableTarget(
+      name: "kap-system"
     )
   ]
 )

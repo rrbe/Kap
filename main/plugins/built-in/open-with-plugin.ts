@@ -2,8 +2,7 @@ import {ShareServiceContext} from '../service-context';
 import path from 'path';
 import {getFormatExtension} from '../../common/constants';
 import {Format} from '../../common/types';
-
-const {getAppsThatOpenExtension, openFileWithApp} = require('mac-open-with');
+import {getAppsThatOpenExtension, openFileWithApp} from '../../utils/system-helper';
 
 const action = async (context: ShareServiceContext & {appUrl: string}) => {
   const filePath = await context.filePath();
@@ -18,7 +17,7 @@ export interface App {
 }
 
 const getAppsForFormat = (format: Format) => {
-  return (getAppsThatOpenExtension.sync(getFormatExtension(format)) as App[])
+  return (getAppsThatOpenExtension(getFormatExtension(format)) as App[])
     .map(app => ({...app, name: decodeURI(path.parse(app.url).name)}))
     .filter(app => !['Kap', 'Kap Beta'].includes(app.name))
     .sort((a, b) => {
