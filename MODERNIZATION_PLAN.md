@@ -9,7 +9,7 @@
 - [x] 阶段 4：升级 Electron（`0a5d1eb`）
 - [x] 阶段 5：优化 ARM 导出管线
 - [x] 阶段 6：迁移录屏到 ScreenCaptureKit
-- [ ] 阶段 7：删除和升级其余依赖，迁移 pnpm
+- [x] 阶段 7：删除和升级其余依赖，迁移 pnpm
 - [ ] 阶段 8：跨架构回归与发布准备
 
 ## 目标
@@ -226,6 +226,15 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 - 干净 checkout 可以用文档中的单组 pnpm 命令安装、测试、构建和打包。
 - lockfile 只保留 pnpm lockfile，安装脚本白名单最小化。
 - 无未解释的过期直接依赖、无已知高危生产依赖告警。
+
+### 实施结果
+
+- 根项目由 Yarn 1 迁移到 pnpm 10.33.2，保留 hoisted 布局；干净删除 `node_modules` 后的 frozen-lockfile 安装已通过。
+- 直接运行时依赖由 58 个降到 25 个，开发依赖由 36 个降到 28 个；删除了 Next/remote 相关包、旧文件工具、GIF 二进制、旧状态库、旧 IPC 包以及可由 Node/Electron 原生 API 替代的辅助包。
+- React 升级到 19.2，Sentry Electron 升级到 7.15，TypeScript 升级到 5.7，AVA 升级到 6.4，Sinon 升级到 22，AJV 升级到 8.20；lint 现在直接在 Node 24 上运行。
+- 屏幕权限依赖由 x86_64-only 可执行文件升级为 Electron ABI 的 arm64 原生模块；Electron、FFmpeg、权限模块和 ScreenCaptureKit 助手均不需要 Rosetta。
+- 生产依赖审计无已知漏洞。仍显示为 outdated 的 CommonJS/ESM 边界和工具链版本均记录在 `docs/dependency-policy.md`。
+- 完整构建、38 项测试、应用启动、Preferences、Editor 和 IPC smoke test 通过；lint 只保留 15 个既有 TODO/FIXME warning。
 
 ## 阶段 8：跨架构回归与发布准备
 

@@ -178,6 +178,24 @@ VideoToolbox 在该样本上让 HEVC 墙钟时间降低约 67%、user CPU 降低
 
 自动化测试增加到 37 项并全部通过，TypeScript、Vite 和 Swift universal 构建通过；Node 22 下 lint 只保留 19 个既有 warning。无签名 arm64 目录包为 383 MB，最低系统版本为 macOS 13；包内助手位于 `app.asar.unpacked`，同时包含 arm64/x86_64 并直接链接 ScreenCaptureKit，旧 `aperture` Node 包不再存在。
 
+## 阶段 7：依赖与包管理结果
+
+| 检查 | 结果 |
+| --- | --- |
+| 包管理器 | pnpm 10.33.2；frozen-lockfile 干净安装通过 |
+| 直接依赖 | 运行时 58 → 25；开发 36 → 28 |
+| 安装目录 | 813 MB → 746 MB |
+| 核心版本 | React 19.2.7、TypeScript 5.7.3、AVA 6.4.1、Sinon 22、AJV 8.20、Sentry Electron 7.15 |
+| 原生架构 | Electron、FFmpeg、屏幕权限模块均为 arm64；录屏助手为 arm64+x86_64 universal |
+| 自动化检查 | 38 tests、TypeScript、Vite、Swift universal 构建通过；Node 24 lint 仅有 15 个既有 TODO/FIXME warning |
+| 生产依赖审计 | `pnpm audit --prod` 无已知漏洞 |
+
+最终实现不再包含独立 gifsicle：GIF 由 FFmpeg 的 palettegen/paletteuse 直接完成，有损选项通过 palette 色数保留。阶段 5 曾使用 universal gifsicle 解除 Rosetta 阻塞，阶段 7 又删除了这一步和对应二进制，转换测试继续覆盖无损、非 Retina 和有损 GIF。
+
+Renderer 与 main 之间的 `electron-better-ipc` 包也已删除。preload 继续执行 channel 白名单和页面来源校验，main 使用约束在项目内的请求/响应实现；Cropper、Preferences 和 Editor 的应用级 smoke test 已覆盖这条边界。
+
+仍保留的旧主版本主要是 CommonJS main 与 ESM-only 新版本之间的边界。具体版本、理由和升级前置条件记录在 `docs/dependency-policy.md`，不把无运行时性能收益的 main ESM/插件 ABI 迁移混入本轮。
+
 ## 运行时性能记录
 
 自动化基线目前覆盖转换管线和构建管线。以下 GUI 指标需要在阶段 1 的开发计时日志加入后，在相同显示器配置上补录；旧版本没有可靠埋点，人工秒表不足以区分窗口创建、页面加载和显示耗时。
