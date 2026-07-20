@@ -229,14 +229,14 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
   };
 }
 
-interface ExportEvents {
+type ExportEvents = {
   updated: (state: ExportState) => void;
-}
+};
 
-interface ExportsEvents {
+type ExportsEvents = {
   added: (state: ExportState) => void;
   updated: (state: ExportState) => void;
-}
+};
 
 export const setUpExportsListeners = () => {
   ipcMain.on('drag-export', async (event: any, id: string) => {

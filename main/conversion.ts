@@ -144,10 +144,10 @@ export default class Conversion extends (EventEmitter as new () => TypedEventEmi
   };
 }
 
-interface ConversionEvents {
+type ConversionEvents = {
   progress: (text: string, percentage: number) => void;
   error: (error: Error) => void;
   cancel: () => void;
   completed: () => void;
   'file-size': (size: string) => void;
-}
+};

@@ -27,7 +27,7 @@
     "build": "pnpm build-main && pnpm build-renderer",
     "dist": "pnpm build && electron-builder",
     "pack": "pnpm build && electron-builder --dir",
-    "postinstall": "electron-builder install-app-deps",
+    "postinstall": "node -e \"require('electron')\" && electron-builder install-app-deps",
     "prepare": "husky",
     "sentry-version": "echo \"$npm_package_name@$npm_package_version\"",
     "dev": "vite --config renderer/vite.config.ts"
@@ -79,7 +79,7 @@
     "electron-builder": "^26.15.3",
     "eslint-config-xo-react": "^0.27.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "husky": "^9.1.7",
     "module-alias": "^2.2.2",
     "rolldown": "^1.2.0",
@@ -87,7 +87,7 @@
     "tap-xunit": "^2.4.1",
     "ts-node": "^10.4.0",
     "type-fest": "^4.41.0",
-    "typed-emitter": "^1.4.0",
+    "typed-emitter": "^2.1.0",
     "typescript": "5.7.3",
     "vite": "^8.1.5",
     "xo": "^0.60.0"
