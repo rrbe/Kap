@@ -66,18 +66,6 @@ const EditorPage = () => {
           background-color: #222222;
         }
 
-        .tooltip {
-          padding: 0 !important;
-          max-width: 300px;
-        }
-
-        .tooltip-content {
-          padding: 8px 21px;
-        }
-
-        .hide-tooltip .tooltip {
-          display: none;
-        }
       `}</style>
     </div>
   );

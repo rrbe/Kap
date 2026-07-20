@@ -1,6 +1,6 @@
 import {app, clipboard} from 'electron';
 import Store from 'electron-store';
-import got, {GotFn, GotPromise} from 'got';
+import got from 'got';
 import {ApertureOptions, Format} from '../common/types';
 import {InstalledPlugin} from './plugin';
 import {addPluginPromise} from '../utils/deep-linking';
@@ -13,7 +13,7 @@ interface ServiceContextOptions {
 }
 
 class ServiceContext {
-  requests: Array<GotPromise<any>> = [];
+  requests: Array<{cancel?: () => void; destroy?: () => void}> = [];
   config: Store;
 
   private readonly plugin: InstalledPlugin;
@@ -23,7 +23,7 @@ class ServiceContext {
     this.config = this.plugin.config;
   }
 
-  request = (...args: Parameters<GotFn>) => {
+  request = (...args: Parameters<typeof got>) => {
     const request = got(...args);
     this.requests.push(request);
     return request;
@@ -96,7 +96,8 @@ export class ShareServiceContext extends ServiceContext {
     this.options.onCancel();
 
     for (const request of this.requests) {
-      request.cancel();
+      request.cancel?.();
+      request.destroy?.();
     }
   };
 }
@@ -153,7 +154,8 @@ export class EditServiceContext extends ServiceContext {
     this.options.onCancel();
 
     for (const request of this.requests) {
-      request.cancel();
+      request.cancel?.();
+      request.destroy?.();
     }
   };
 }

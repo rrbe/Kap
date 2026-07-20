@@ -3,10 +3,10 @@ import KeyboardNumberInput from '../../keyboard-number-input';
 import Slider from './slider';
 import OptionsContainer from '../options-container';
 import {useState, useEffect, useMemo} from 'react';
-import stringMath from 'string-math';
 import VideoMetadataContainer from '../video-metadata-container';
 import {shake} from '../../../utils/inputs';
-import Select, {Separator} from './select';
+import {evaluateArithmetic} from '../../../utils/arithmetic';
+import Select from './select';
 
 const percentValues = [100, 75, 50, 33, 25, 20, 10];
 
@@ -64,10 +64,7 @@ const LeftOptions = () => {
     const {currentTarget} = event;
     const {name} = currentTarget;
 
-    let value: number;
-    try {
-      value = stringMath(currentTarget.value);
-    } catch {}
+    let value = evaluateArithmetic(currentTarget.value);
 
     // Fallback to last valid
     const updates = {width, height};

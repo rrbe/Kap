@@ -1,9 +1,8 @@
-import {Menu, MenuItem, nativeImage} from 'electron';
+import {Menu, MenuItem} from 'electron';
 import Store from 'electron-store';
 import {windowManager} from '../windows/manager';
 
 const {getWindows, activateWindow} = require('mac-windows');
-const {getAppIconListByPid} = require('node-mac-app-icon');
 
 export interface MacWindow {
   pid: number;
@@ -36,24 +35,11 @@ const isValidApp = ({ownerName}: MacWindow) => !APP_BLACKLIST.includes(ownerName
 
 const getWindowList = async () => {
   const windows = await getWindows() as MacWindow[];
-  const images = await getAppIconListByPid(windows.map(win => win.pid), {
-    size: 16,
-    failOnError: false
-  }) as Array<{
-    pid: number;
-    icon: Buffer;
-  }>;
-
   let maxLastUsed = 0;
 
   return windows.filter(window => isValidApp(window)).map(win => {
-    const iconImage = images.find(img => img.pid === win.pid);
-    const icon = iconImage?.icon ? nativeImage.createFromBuffer(iconImage.icon) : undefined;
-
     const window = {
       ...win,
-      icon2x: icon,
-      icon: icon?.resize({width: 16, height: 16}),
       count: 0,
       lastUsed: 0,
       ...usageHistory[win.pid]
@@ -82,7 +68,6 @@ export const buildWindowsMenu = async (selected: string) => {
     menu.append(
       new MenuItem({
         label: win.ownerName,
-        icon: win.icon,
         type: 'checkbox',
         checked: win.ownerName === selected,
         click: () => {

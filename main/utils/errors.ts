@@ -1,8 +1,7 @@
 import path from 'path';
-import {clipboard, shell, app} from 'electron';
+import {clipboard, shell, app, net} from 'electron';
 import ensureError from 'ensure-error';
 import cleanStack from 'clean-stack';
-import isOnline from 'is-online';
 import {openNewGitHubIssue} from 'electron-util';
 import got from 'got';
 import delay from 'delay';
@@ -46,7 +45,7 @@ const getSentryIssue = async (eventId: string, tries = 0): Promise<SentryIssue |
     // It will then filter through GitHub issues to try and find an issue matching that issue ID.
     // It will return the issue information if it finds it or a partial template to use to create one if not.
     // https://github.com/wulkano/kap-sentry-tracker
-    const {body} = await got.get(`https://kap-sentry-tracker.vercel.app/api/event/${eventId}`, {json: true});
+    const body = await got.get(`https://kap-sentry-tracker.vercel.app/api/event/${eventId}`).json<SentryIssue & {pending?: boolean}>();
 
     if (body.pending) {
       await delay(2000);
@@ -139,7 +138,7 @@ export const showError = async (
   let message;
   const buttons: any[] = [...mainButtons];
 
-  if (isSentryEnabled && await isOnline()) {
+  if (isSentryEnabled && net.isOnline()) {
     const eventId = Sentry.captureException(ensuredError);
     const sentryIssuePromise = getSentryIssue(eventId);
 

@@ -1,6 +1,6 @@
 import PCancelable from 'p-cancelable';
 import tempy from 'tempy';
-import {compress, convert} from './process';
+import {convert} from './process';
 import {areDimensionsEven, conditionalArgs, ConvertOptions, makeEven} from './utils';
 import {settings} from '../common/settings';
 import os from 'os';
@@ -21,10 +21,11 @@ export const getVideoEncoderArgs = (format: Format, useHardwareAcceleration = ha
 // `time ffmpeg -i original.mp4 -i palette.png -filter_complex 'fps=30,scale=-1:-1:flags=lanczos[x]; [x][1:v]paletteuse' palette.gif`
 const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PCancelable.OnCancelFunction) => {
   const palettePath = tempy.file({extension: 'png'});
+  const paletteColors = settings.get('lossyCompression', false) ? 128 : 256;
 
   const paletteProcess = convert(palettePath, {shouldTrack: false}, conditionalArgs(
     '-i', options.inputPath,
-    '-vf', `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''},palettegen`,
+    '-vf', `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''},palettegen=max_colors=${paletteColors}:stats_mode=diff`,
     {
       args: [
         '-ss',
@@ -61,7 +62,7 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
         '-i',
         palettePath,
         '-filter_complex',
-        `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''}[x]; [x][1:v]paletteuse`
+        `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''}[x]; [x][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle`
       ],
       if: hasPalette
     },
@@ -90,23 +91,6 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
   });
 
   await conversionProcess;
-
-  const compressProcess = compress(options.outputPath, {
-    onProgress: (progress, estimate) => {
-      options.onProgress('Compressing', progress, estimate);
-    },
-    startTime: options.startTime,
-    endTime: options.endTime
-  }, [
-    '--batch',
-    options.outputPath
-  ]);
-
-  onCancel(() => {
-    compressProcess.cancel();
-  });
-
-  await compressProcess;
 
   return options.outputPath;
 });

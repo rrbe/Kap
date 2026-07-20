@@ -3,7 +3,6 @@ import macosVersion from 'macos-version';
 import semver from 'semver';
 import path from 'path';
 import fs from 'fs';
-import readPkg from 'read-pkg';
 import {RecordService, ShareService, EditService} from './service';
 import {showError} from '../utils/errors';
 import PluginConfig from './config';
@@ -15,12 +14,25 @@ export const recordPluginServiceState = new Store<Record<string, boolean>>({
   defaults: {}
 });
 
+export interface PluginPackageJson {
+  name: string;
+  version: string;
+  description?: string;
+  homepage?: string;
+  links?: {homepage?: string};
+  kapVersion?: string;
+  kap?: {
+    version?: string;
+    macosVersion?: string;
+  };
+}
+
 class BasePlugin {
   name: string;
   kapVersion?: string;
   macosVersion?: string;
   link?: string;
-  json?: readPkg.NormalizedPackageJson;
+  json?: PluginPackageJson;
 
   constructor(pluginName: string) {
     this.name = pluginName;
@@ -74,7 +86,7 @@ export class InstalledPlugin extends BasePlugin {
   pluginsPath = path.join(app.getPath('userData'), 'plugins');
 
   pluginPath: string;
-  json?: readPkg.NormalizedPackageJson;
+  json?: PluginPackageJson;
   content: KapPlugin;
   config: PluginConfig;
   hasConfig: boolean;
@@ -87,7 +99,7 @@ export class InstalledPlugin extends BasePlugin {
     this.isBuiltIn = Boolean(customPath);
 
     if (!this.isBuiltIn) {
-      this.json = readPkg.sync({cwd: this.pluginPath});
+      this.json = JSON.parse(fs.readFileSync(path.join(this.pluginPath, 'package.json'), 'utf8')) as PluginPackageJson;
       this.link = this.json.homepage ?? this.json.links?.homepage;
 
       // Keeping for backwards compatibility
@@ -194,7 +206,7 @@ export class InstalledPlugin extends BasePlugin {
 export class NpmPlugin extends BasePlugin {
   isInstalled = false;
 
-  constructor(json: readPkg.NormalizedPackageJson, kap: {version?: string; macosVersion?: string} = {}) {
+  constructor(json: PluginPackageJson, kap: {version?: string; macosVersion?: string} = {}) {
     super(json.name);
 
     this.json = json;
