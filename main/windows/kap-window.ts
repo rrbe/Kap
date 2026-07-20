@@ -2,6 +2,7 @@ import electron, {app, BrowserWindow, Menu} from 'electron';
 import {ipcMain as ipc} from 'electron-better-ipc';
 import {customApplicationMenu, defaultApplicationMenu, MenuModifier} from '../menus/application';
 import {loadRoute} from '../utils/routes';
+import {secureWebPreferences} from './web-preferences';
 
 interface KapWindowOptions<State> extends Electron.BrowserWindowConstructorOptions {
   route: string;
@@ -49,10 +50,8 @@ export default class KapWindow<State = any> {
     this.browserWindow = new BrowserWindow({
       ...rest,
       webPreferences: {
-        nodeIntegration: true,
-        enableRemoteModule: true,
-        contextIsolation: false,
-        ...rest.webPreferences
+        ...rest.webPreferences,
+        ...secureWebPreferences
       },
       show: false
     });

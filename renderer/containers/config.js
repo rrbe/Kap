@@ -1,59 +1,36 @@
-import electron from 'electron';
 import {Container} from 'unstated';
 
 export default class ConfigContainer extends Container {
-  remote = electron.remote || false;
-
   state = {selectedTab: 0};
 
-  setPlugin(pluginName) {
-    const {InstalledPlugin} = this.remote.require('./plugins/plugin');
-    this.plugin = new InstalledPlugin(pluginName);
-    this.config = this.plugin.config;
-    this.validators = this.config.validators;
-    this.validate();
+  setPlugin = async pluginName => {
+    const {validators, values} = await window.kap.config.get(pluginName);
     this.setState({
-      validators: this.validators,
-      values: this.config.store,
+      validators,
+      values,
       pluginName
     });
-  }
+  };
 
-  setEditService = (pluginName, serviceTitle) => {
-    const {InstalledPlugin} = this.remote.require('./plugins/plugin');
-    this.plugin = new InstalledPlugin(pluginName);
-    this.config = this.plugin.config;
-    this.validators = this.config.validators.filter(({title}) => title === serviceTitle);
-    this.validate();
+  setEditService = async (pluginName, serviceTitle) => {
+    const {validators, values} = await window.kap.config.get(pluginName, serviceTitle);
     this.setState({
-      validators: this.validators,
-      values: this.config.store,
+      validators,
+      values,
       pluginName,
       serviceTitle
     });
   };
 
-  validate = () => {
-    for (const validator of this.validators) {
-      validator.validate(this.config.store);
-    }
-  };
+  closeWindow = () => window.kap.window.close();
 
-  closeWindow = () => this.remote.getCurrentWindow().close();
+  openConfig = () => window.kap.config.open();
 
-  openConfig = () => this.plugin.openConfigInEditor();
+  viewOnGithub = () => window.kap.config.viewOnGithub();
 
-  viewOnGithub = () => this.plugin.viewOnGithub();
-
-  onChange = (key, value) => {
-    if (value === undefined) {
-      this.config.delete(key);
-    } else {
-      this.config.set(key, value);
-    }
-
-    this.validate();
-    this.setState({values: this.config.store});
+  onChange = async (key, value) => {
+    const {validators, values} = await window.kap.config.change(key, value, this.state.serviceTitle);
+    this.setState({validators, values});
   };
 
   selectTab = selectedTab => {

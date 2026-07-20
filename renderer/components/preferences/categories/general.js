@@ -1,4 +1,3 @@
-import electron from 'electron';
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -19,16 +18,10 @@ class General extends React.Component {
     category: 'general'
   };
 
-  state = {};
-
-  componentDidMount() {
-    this.setState({
-      showCursorSupported: electron.remote.require('macos-version').isGreaterThanOrEqualTo('10.13')
-    });
-  }
+  state = {showCursorSupported: window.kap.app.getInfo().showCursorSupported};
 
   openKapturesDir = () => {
-    electron.shell.openPath(this.props.kapturesDir);
+    window.kap.shell.openPath(this.props.kapturesDir);
   };
 
   render() {
@@ -64,7 +57,7 @@ class General extends React.Component {
       value: device.id
     }));
 
-    const homeDirectory = electron.remote.app.getPath('home');
+    const homeDirectory = window.kap.app.getInfo().homeDirectory;
     const kapturesDirPath = kapturesDir === homeDirectory || kapturesDir.startsWith(`${homeDirectory}/`) ? kapturesDir.replace(homeDirectory, '~') : kapturesDir;
     const tabIndex = category === 'general' ? 0 : -1;
     const fpsOptions = [{label: '30 FPS', value: false}, {label: '60 FPS', value: true}];

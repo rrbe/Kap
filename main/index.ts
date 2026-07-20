@@ -7,8 +7,6 @@ import toMilliseconds from '@sindresorhus/to-milliseconds';
 import './windows/load';
 import './utils/sentry';
 
-require('electron-timber').hookConsole({main: true, renderer: true});
-
 import {settings} from './common/settings';
 import {plugins} from './plugins';
 import {initializeTray} from './tray';
@@ -24,10 +22,13 @@ import {setUpExportsListeners} from './export';
 import {windowManager} from './windows/manager';
 import {setupProtocol} from './utils/protocol';
 import {stopRecordingWithNoEdit} from './aperture';
+import {setupPreloadApi} from './preload-api';
 
 const filesToOpen: string[] = [];
 
 let onExitCleanupComplete = false;
+
+setupPreloadApi();
 
 app.commandLine.appendSwitch('--enable-features', 'OverlayScrollbar');
 

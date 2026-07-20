@@ -1,13 +1,13 @@
 import {useState, useEffect} from 'react';
 
 const useDarkMode = () => {
-  const {api} = require('electron-util');
-  const [isDarkMode, setIsDarkMode] = useState(api.nativeTheme.shouldUseDarkColors);
+  const [isDarkMode, setIsDarkMode] = useState(window.kap.appearance.get().darkMode);
 
   useEffect(() => {
-    const onChange = () => setIsDarkMode(api.nativeTheme.shouldUseDarkColors);
-    api.nativeTheme.on('updated', onChange);
-    return () => api.nativeTheme.removeListener('updated', onChange);
+    const listenerId = window.kap.appearance.onChanged(() => {
+      setIsDarkMode(window.kap.appearance.get().darkMode);
+    });
+    return () => window.kap.appearance.removeListener(listenerId);
   }, []);
 
   return isDarkMode;

@@ -6,6 +6,7 @@ import pEvent from 'p-event';
 
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 const openConfigWindow = async (pluginName: string) => {
   const prefsWindow = await windowManager.preferences?.open();
@@ -21,11 +22,7 @@ const openConfigWindow = async (pluginName: string) => {
     show: false,
     parent: prefsWindow,
     modal: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   await loadRoute(configWindow, 'config');
@@ -48,11 +45,7 @@ const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, 
     show: false,
     parent: editorWindow,
     modal: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   await loadRoute(configWindow, 'config');

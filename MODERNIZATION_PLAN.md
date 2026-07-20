@@ -4,8 +4,8 @@
 
 - [x] 阶段 0：建立可复现基线（`7abd968`）
 - [x] 阶段 1：复用 Cropper 窗口并缓存音频设备（`dfb2aa2`）
-- [x] 阶段 2：用 Vite 替换 Next.js
-- [ ] 阶段 3：移除 remote，建立安全 IPC 边界
+- [x] 阶段 2：用 Vite 替换 Next.js（`607fbbd`）
+- [x] 阶段 3：移除 remote，建立安全 IPC 边界
 - [ ] 阶段 4：升级 Electron
 - [ ] 阶段 5：优化 ARM 导出管线
 - [ ] 阶段 6：迁移录屏到 ScreenCaptureKit

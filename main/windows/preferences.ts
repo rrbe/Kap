@@ -5,6 +5,7 @@ import {ipcMain as ipc} from 'electron-better-ipc';
 import {loadRoute} from '../utils/routes';
 import {track} from '../common/analytics';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 let prefsWindow: BrowserWindow | undefined;
 
@@ -36,11 +37,7 @@ const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
     frame: false,
     transparent: true,
     vibrancy: 'window',
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   const titlebarHeight = 85;
@@ -70,8 +67,6 @@ const closePrefsWindow = () => {
     prefsWindow.close();
   }
 };
-
-ipc.answerRenderer('open-preferences', openPrefsWindow);
 
 windowManager.setPreferences({
   open: openPrefsWindow,

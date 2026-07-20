@@ -1,8 +1,8 @@
-import electron from 'electron';
 import nearestNormalAspectRatio from 'nearest-normal-aspect-ratio';
 import {Container} from 'unstated';
 
 import {minHeight, minWidth, resizeTo, setScreenSize} from '../utils/inputs';
+import {settings} from '../utils/settings';
 
 // Helper function for retrieving the simplest ratio,
 // via the largest common divisor of two numbers (thanks @doot0)
@@ -37,19 +37,9 @@ export const findRatioForSize = (width, height) => {
 };
 
 export default class CropperContainer extends Container {
-  remote = electron.remote || false;
-
   constructor() {
     super();
-
-    if (!this.remote) {
-      this.state = {};
-      return;
-    }
-
-    const {settings} = this.remote.require('./common/settings');
     this.settings = settings;
-    this.settings.getSelectedInputDeviceId = this.remote.require('./utils/devices').getSelectedInputDeviceId;
 
     this.state = {
       isRecording: false,
@@ -65,7 +55,7 @@ export default class CropperContainer extends Container {
       isReady: false,
       ratio: [1, 1],
       recordAudio: this.settings.get('recordAudio'),
-      audioInputDeviceId: this.settings.getSelectedInputDeviceId()
+      audioInputDeviceId: window.kap.recording.getSelectedInputDeviceId()
     };
 
     this.settings.onDidChange('recordAudio', recordAudio => {
@@ -73,7 +63,7 @@ export default class CropperContainer extends Container {
     });
 
     this.settings.onDidChange('audioInputDeviceId', async () => {
-      this.setState({audioInputDeviceId: this.settings.getSelectedInputDeviceId()});
+      this.setState({audioInputDeviceId: window.kap.recording.getSelectedInputDeviceId()});
     });
   }
 
@@ -291,7 +281,7 @@ export default class CropperContainer extends Container {
 
   stopPicking = () => {
     if (this.state.isPicking) {
-      this.remote.getCurrentWindow().close();
+      window.kap.window.close();
     } else {
       this.cursorContainer.removeCursorObserver(this.pick);
     }

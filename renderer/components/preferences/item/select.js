@@ -1,9 +1,9 @@
-import electron from 'electron';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 import {DropdownArrowIcon} from '../../../vectors';
 import {handleKeyboardActivation} from '../../../utils/inputs';
+import {popupMenu} from '../../../utils/menu';
 
 class Select extends React.Component {
   static defaultProps = {
@@ -17,37 +17,17 @@ class Select extends React.Component {
     this.select = React.createRef();
   }
 
-  state = {};
-
-  static getDerivedStateFromProps(nextProps) {
-    const {options, onSelect, selected} = nextProps;
-
-    if (!electron.remote || options.length === 0) {
-      return {};
-    }
-
-    const {Menu, MenuItem} = electron.remote;
-    const menu = new Menu();
-
-    for (const option of options) {
-      menu.append(
-        new MenuItem({
-          label: option.label,
-          type: 'radio',
-          checked: option.value === selected,
-          click: () => onSelect(option.value)
-        })
-      );
-    }
-
-    return {menu};
-  }
-
   handleClick = () => {
-    if (this.props.options.length > 0) {
+    const {options, onSelect, selected} = this.props;
+    if (options.length > 0) {
       const boundingRect = this.select.current.getBoundingClientRect();
 
-      this.state.menu.popup({
+      popupMenu(options.map(option => ({
+        label: option.label,
+        type: 'radio',
+        checked: option.value === selected,
+        click: () => onSelect(option.value)
+      })), {
         x: Math.round(boundingRect.left),
         y: Math.round(boundingRect.top)
       });

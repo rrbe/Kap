@@ -4,6 +4,7 @@ import {BrowserWindow, Rectangle} from 'electron';
 import {ipcMain as ipc} from 'electron-better-ipc';
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 const DIALOG_MIN_WIDTH = 420;
 const DIALOG_MIN_HEIGHT = 150;
@@ -24,11 +25,7 @@ const showDialog = async (options: DialogOptions) => new Promise<number | void>(
     center: true,
     title: '',
     useContentSize: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   let buttons: any[];

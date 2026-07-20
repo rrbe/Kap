@@ -101,6 +101,22 @@ NODE_OPTIONS=--openssl-legacy-provider yarn build-renderer
 
 首次 Cropper 数据包含 Vite 开发服务器的冷启动和依赖预构建开销；阶段 1 的窗口复用收益应以同一进程内第二次打开的数据衡量，不能把这项开发态数据等同于生产启动性能。
 
+## 阶段 3：Renderer 隔离结果
+
+| 检查 | 结果 |
+| --- | --- |
+| BrowserWindow 安全配置 | 全部使用 preload，`nodeIntegration: false`、`enableRemoteModule: false`、`contextIsolation: true` |
+| Renderer 特权调用 | Electron `remote` 和直接 Electron/Node 访问已移除，桌面能力改由固定的 `window.kap` API 提供 |
+| IPC 边界 | 现有 `electron-better-ipc` 兼容层仅允许明确列出的 channel；新能力按命名方法暴露，不提供任意 invoke |
+| 冗余依赖 | 删除依赖 `electron-timber` 及 3 个 Renderer Electron shim；同时删除 180 余行失效注释代码 |
+| CSP | 限制脚本、连接、图片和媒体来源，不再允许内联脚本 |
+| 自动化测试 | 30 tests 通过，63.46 秒；新增 BrowserWindow 隔离配置回归测试 |
+| lint / build | Node 20.19.4 下通过；Vite 构建 245 个模块耗时 0.62 秒 |
+| 开发态 smoke test | 双显示器 Cropper、Editor、Preferences 及窗口/上下文菜单正常；CDP 证实 `window.require`、`window.process` 均为 `undefined` |
+| arm64 目录包 | 通过，289 MB；主程序为 Mach-O arm64，asar 包含 `dist-js/preload.js`，不含 Next/electron-next/electron-timber |
+
+迁移中发现 `electron-timber` 会为后创建的窗口注册一份依赖 `remote` 的 session preload，导致 Preferences 的安全 preload 失效。该日志桥接不是产品功能，因此直接删除。Preferences 的打开动作也改为命名 IPC，不再尝试把 BrowserWindow 作为响应序列化；调整后窗口能在隔离上下文中正常挂载。
+
 ## 运行时性能记录
 
 自动化基线目前覆盖转换管线和构建管线。以下 GUI 指标需要在阶段 1 的开发计时日志加入后，在相同显示器配置上补录；旧版本没有可靠埋点，人工秒表不足以区分窗口创建、页面加载和显示耗时。

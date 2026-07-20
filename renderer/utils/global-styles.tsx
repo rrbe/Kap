@@ -1,27 +1,22 @@
 import {useState, useEffect, useMemo} from 'react';
 import useDarkMode from '../hooks/dark-mode';
-import {remote} from 'electron';
 
 const GlobalStyles = () => {
-  const [accentColor, setAccentColor] = useState(remote.systemPreferences.getAccentColor());
+  const [accentColor, setAccentColor] = useState(window.kap.appearance.get().accentColor);
   const isDarkMode = useDarkMode();
 
   const systemColors = useMemo(() => {
+    const colors = window.kap.appearance.get(systemColorNames).colors;
     return systemColorNames
-      .map(name => `--system-${name}: ${remote.systemPreferences.getColor(name as any)};`)
+      .map(name => `--system-${name}: ${colors[name]};`)
       .join('\n');
   }, [isDarkMode]);
 
-  const updateAccentColor = (_, accentColor) => {
-    setAccentColor(accentColor);
-  };
-
   useEffect(() => {
-    remote.systemPreferences.on('accent-color-changed', updateAccentColor);
-
-    // Return () => {
-    //   api.systemPreferences.off('accent-color-changed', updateAccentColor);
-    // };
+    const listenerId = window.kap.appearance.onChanged(() => {
+      setAccentColor(window.kap.appearance.get().accentColor);
+    });
+    return () => window.kap.appearance.removeListener(listenerId);
   }, []);
 
   return (

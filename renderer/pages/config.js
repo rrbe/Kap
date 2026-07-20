@@ -12,13 +12,13 @@ export default class ConfigPage extends React.Component {
   state = {title: ''};
 
   componentDidMount() {
-    ipc.answerMain('plugin', pluginName => {
-      configContainer.setPlugin(pluginName);
+    ipc.answerMain('plugin', async pluginName => {
+      await configContainer.setPlugin(pluginName);
       this.setState({title: pluginName.replace(/^kap-/, '')});
     });
 
-    ipc.answerMain('edit-service', ({pluginName, serviceTitle}) => {
-      configContainer.setEditService(pluginName, serviceTitle);
+    ipc.answerMain('edit-service', async ({pluginName, serviceTitle}) => {
+      await configContainer.setEditService(pluginName, serviceTitle);
       this.setState({title: serviceTitle});
     });
   }

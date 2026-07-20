@@ -1,6 +1,6 @@
-import electron from 'electron';
 import React from 'react';
 import {Provider} from 'unstated';
+import {ipcRenderer} from 'electron-better-ipc';
 
 import Overlay from '../components/cropper/overlay';
 import Cropper from '../components/cropper';
@@ -22,18 +22,10 @@ actionBarContainer.bindCropper(cropperContainer);
 let lastRatioLockState = null;
 
 export default class CropperPage extends React.Component {
-  remote = electron.remote || false;
-
   dev = false;
 
   constructor(props) {
     super(props);
-
-    if (!electron.ipcRenderer) {
-      return;
-    }
-
-    const {ipcRenderer, remote} = electron;
 
     ipcRenderer.on('display', (_, display) => {
       cropperContainer.setDisplay(display);
@@ -53,12 +45,11 @@ export default class CropperPage extends React.Component {
       cropperContainer.setRecording();
     });
 
-    const window = remote.getCurrentWindow();
-    window.on('focus', () => {
+    globalThis.window.addEventListener('focus', () => {
       cropperContainer.setActive(true);
     });
 
-    window.on('blur', event => {
+    globalThis.window.addEventListener('blur', event => {
       if (!event.defaultPrevented) {
         cropperContainer.setActive(false);
       }
@@ -78,7 +69,7 @@ export default class CropperPage extends React.Component {
   handleKeyEvent = event => {
     switch (event.key) {
       case 'Escape':
-        this.remote.getCurrentWindow().close();
+        window.kap.window.close();
         break;
       case 'Shift':
         if (event.type === 'keydown' && !event.defaultPrevented) {
@@ -94,7 +85,7 @@ export default class CropperPage extends React.Component {
         cropperContainer.toggleResizeFromCenter(event.type === 'keydown');
         break;
       case 'i':
-        this.remote.getCurrentWindow().setIgnoreMouseEvents(true);
+        window.kap.window.setIgnoreMouseEvents(true);
         this.dev = !this.dev;
         break;
       default:

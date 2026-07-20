@@ -1,7 +1,7 @@
 import {DropdownArrowIcon, CancelIcon} from '../../../vectors';
 import classNames from 'classnames';
 import {useRef} from 'react';
-import {remote, MenuItemConstructorOptions, NativeImage} from 'electron';
+import {MenuItem, popupMenu} from '../../../utils/menu';
 
 type Option<T> = {
   label: string;
@@ -11,7 +11,7 @@ type Option<T> = {
   checked?: boolean;
   click?: () => void;
   separator?: false;
-  icon?: NativeImage;
+  icon?: string;
 };
 
 export type Separator = {
@@ -48,9 +48,7 @@ const Select = <T, >(props: Props<T>) => {
 
     const boundingRect = select.current.getBoundingClientRect();
 
-    const {Menu} = remote;
-
-    const convertToMenuTemplate = (option: Option<T> | Separator): MenuItemConstructorOptions => {
+    const convertToMenuTemplate = (option: Option<T> | Separator): MenuItem => {
       if (option.separator) {
         return {type: 'separator'};
       }
@@ -58,7 +56,7 @@ const Select = <T, >(props: Props<T>) => {
       if (option.subMenu) {
         return {
           label: option.label,
-          submenu: option.subMenu.map(opt => convertToMenuTemplate(opt)),
+          submenu: option.subMenu.map(item => convertToMenuTemplate(item)),
           checked: option.checked
         };
       }
@@ -74,9 +72,7 @@ const Select = <T, >(props: Props<T>) => {
       };
     };
 
-    const menu = Menu.buildFromTemplate(options.map(opt => convertToMenuTemplate(opt)));
-
-    menu.popup({
+    popupMenu(options.map(option => convertToMenuTemplate(option)), {
       x: Math.round(boundingRect.left),
       y: Math.round(boundingRect.top)
     });

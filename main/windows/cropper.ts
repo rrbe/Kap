@@ -8,6 +8,7 @@ import {settings} from '../common/settings';
 import {hasMicrophoneAccess, ensureMicrophonePermissions, openSystemPreferences, ensureScreenCapturePermissions} from '../common/system-permissions';
 import {loadRoute} from '../utils/routes';
 import {MacWindow} from '../utils/windows';
+import {secureWebPreferences} from './web-preferences';
 
 const croppers = new Map<number, BrowserWindow>();
 let notificationId: number | undefined;
@@ -111,11 +112,7 @@ const openCropper = async (display: Display, activeDisplayId?: number) => {
     frame: false,
     transparent: true,
     show: false,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   cropper.setAlwaysOnTop(true, 'screen-saver', 1);
