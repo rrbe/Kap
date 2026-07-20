@@ -2,7 +2,6 @@ import {app} from 'electron';
 import {EventEmitter} from 'events';
 import path from 'path';
 import fs from 'fs';
-import makeDir from 'make-dir';
 import execa from 'execa';
 import {track} from '../common/analytics';
 import {InstalledPlugin, NpmPlugin} from './plugin';
@@ -178,7 +177,7 @@ export class Plugins extends EventEmitter {
 
   private makePluginsDir() {
     if (!fs.existsSync(this.packageJsonPath)) {
-      makeDir.sync(this.pluginsDir);
+      fs.mkdirSync(this.pluginsDir, {recursive: true});
       fs.writeFileSync(this.packageJsonPath, JSON.stringify({dependencies: {}}, null, 2));
     }
   }
