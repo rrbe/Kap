@@ -25,6 +25,7 @@
     "build-main": "pnpm build-capture-helper && tsc",
     "build-renderer": "vite build --config renderer/vite.config.ts",
     "build": "pnpm build-main && pnpm build-renderer",
+    "check:app-architecture": "node scripts/check-app-architecture.mjs",
     "dist": "pnpm build && electron-builder",
     "pack": "pnpm build && electron-builder --dir",
     "postinstall": "node -e \"require('electron')\" && electron-builder install-app-deps",
@@ -280,6 +281,7 @@
       "dist-js/kap-system"
     ],
     "mac": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
       "electronUpdaterCompatibility": ">=2.16",
       "category": "public.app-category.productivity",
       "minimumSystemVersion": "13.0.0",

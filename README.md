@@ -20,6 +20,8 @@ Or install with [Homebrew-Cask](https://caskroom.github.io):
 brew install --cask kap
 ```
 
+Kap requires macOS 13 or newer. Apple silicon and Intel builds are produced and tested separately so their native dependencies match the target architecture.
+
 ## How To Use Kap
 
 Click the menu bar icon to bring up the screen recorder. After selecting what portion of the screen you'd like to record, hit the record button to start recording. Click the menu bar icon again to stop the recording.
