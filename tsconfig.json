@@ -1,13 +1,23 @@
 {
-  "extends": "@sindresorhus/tsconfig",
   "compilerOptions": {
     "outDir": "dist-js",
     "target": "es2019",
     "module": "commonjs",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowJs": true,
     "sourceMap": true,
     "inlineSources": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "types": [
       "node"
     ],

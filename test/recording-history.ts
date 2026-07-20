@@ -1,6 +1,7 @@
 import {serial as testAny, TestInterface} from 'ava';
 import tempy from 'tempy';
 import fs from 'fs';
+import moment from 'moment';
 import sinon, {SinonFakeTimers} from 'sinon';
 import path from 'path';
 import type {MockWindowManager} from './mocks/window-manager';
@@ -42,7 +43,10 @@ const corrupt = path.resolve(__dirname, 'fixtures', 'corrupt.mp4');
 
 test.before(t => {
   t.context.now = new Date('2020-07-21T15:27:26.564Z');
-  t.context.clock = sinon.useFakeTimers(t.context.now.getTime());
+  t.context.clock = sinon.useFakeTimers({
+    now: t.context.now.getTime(),
+    toFake: ['Date']
+  });
 });
 
 test.after(t => {
@@ -216,7 +220,7 @@ test('`setCurrentRecording()`', t => {
 
   t.deepEqual(recordingHistory.get('activeRecording'), {
     filePath: 'some/path',
-    name: 'Kapture 2020-07-21 at 11.27.26',
+    name: `Kapture ${moment(t.context.now).format('YYYY-MM-DD')} at ${moment(t.context.now).format('HH.mm.ss')}`,
     date: t.context.now.toISOString(),
     apertureOptions: {some: 'options'} as any,
     plugins: {some: 'plugins'} as any
