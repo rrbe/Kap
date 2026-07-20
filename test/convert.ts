@@ -94,10 +94,10 @@ test('mp4: canceling a copy removes the partial output', async t => {
 test('selects VideoToolbox without removing software encoders', t => {
   const dimensions = {width: 1920, height: 1080, fps: 30};
 
-  t.deepEqual(getVideoEncoderArgs(Format.mp4, true, {...dimensions, architecture: 'arm64'}), ['-c:v', 'h264_videotoolbox', '-q:v', '65']);
-  t.deepEqual(getVideoEncoderArgs(Format.hevc, true, {...dimensions, architecture: 'arm64'}), ['-c:v', 'hevc_videotoolbox', '-q:v', '65']);
-  t.deepEqual(getVideoEncoderArgs(Format.mp4, true, {...dimensions, architecture: 'x64'}), ['-c:v', 'h264_videotoolbox', '-b:v', '6220800']);
-  t.deepEqual(getVideoEncoderArgs(Format.hevc, true, {...dimensions, architecture: 'x64'}), ['-c:v', 'hevc_videotoolbox', '-b:v', '6220800']);
+  t.deepEqual(getVideoEncoderArgs(Format.mp4, true, {...dimensions, architecture: 'arm64'}), ['-c:v', 'h264_videotoolbox', '-allow_sw', '1', '-q:v', '65']);
+  t.deepEqual(getVideoEncoderArgs(Format.hevc, true, {...dimensions, architecture: 'arm64'}), ['-c:v', 'hevc_videotoolbox', '-allow_sw', '1', '-q:v', '65']);
+  t.deepEqual(getVideoEncoderArgs(Format.mp4, true, {...dimensions, architecture: 'x64'}), ['-c:v', 'h264_videotoolbox', '-allow_sw', '1', '-b:v', '6220800']);
+  t.deepEqual(getVideoEncoderArgs(Format.hevc, true, {...dimensions, architecture: 'x64'}), ['-c:v', 'hevc_videotoolbox', '-allow_sw', '1', '-b:v', '6220800']);
   t.deepEqual(getVideoEncoderArgs(Format.mp4, false), ['-c:v', 'libx264']);
   t.deepEqual(getVideoEncoderArgs(Format.hevc, false), ['-c:v', 'libx265', '-preset', 'medium']);
 });

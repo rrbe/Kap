@@ -24,10 +24,11 @@ export const getVideoEncoderArgs = (
   const codec = format === Format.mp4 ? 'h264_videotoolbox' : 'hevc_videotoolbox';
 
   if (useHardwareAcceleration) {
+    const encoder = ['-c:v', codec, '-allow_sw', '1'];
     // The Intel ffmpeg-static build rejects VideoToolbox quality-scale options.
     return options.architecture === 'x64' || (options.architecture === undefined && process.arch === 'x64')
-      ? ['-c:v', codec, '-b:v', getVideoBitrate(options)]
-      : ['-c:v', codec, '-q:v', '65'];
+      ? [...encoder, '-b:v', getVideoBitrate(options)]
+      : [...encoder, '-q:v', '65'];
   }
 
   if (format === Format.mp4) {
