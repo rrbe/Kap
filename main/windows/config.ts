@@ -1,8 +1,8 @@
 'use strict';
 
 import {BrowserWindow} from 'electron';
+import {once} from 'events';
 import {ipcMain as ipc} from '../utils/ipc';
-import pEvent from 'p-event';
 
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
@@ -29,7 +29,7 @@ const openConfigWindow = async (pluginName: string) => {
   await ipc.callRenderer(configWindow, 'plugin', pluginName);
   configWindow.show();
 
-  await pEvent(configWindow, 'closed');
+  await once(configWindow, 'closed');
 };
 
 const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, editorWindow: BrowserWindow) => {
@@ -52,7 +52,7 @@ const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, 
   await ipc.callRenderer(configWindow, 'edit-service', {pluginName, serviceTitle});
   configWindow.show();
 
-  await pEvent(configWindow, 'closed');
+  await once(configWindow, 'closed');
 };
 
 ipc.answerRenderer('open-edit-config', async ({pluginName, serviceTitle}, window) => {

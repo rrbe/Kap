@@ -32,7 +32,6 @@ interface Props<T> {
   customLabel?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/comma-dangle
 const Select = <T, >(props: Props<T>) => {
   const select = useRef<HTMLDivElement>();
   const {options = [], value} = props;

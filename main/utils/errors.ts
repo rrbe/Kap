@@ -1,8 +1,7 @@
 import path from 'path';
 import {inspect} from 'util';
+import os from 'os';
 import {clipboard, shell, app, net} from 'electron';
-import cleanStack from 'clean-stack';
-import {openNewGitHubIssue} from 'electron-util';
 import got from 'got';
 import {setTimeout as delay} from 'timers/promises';
 import macosRelease from './macos-release';
@@ -10,6 +9,7 @@ import macosRelease from './macos-release';
 import {windowManager} from '../windows/manager';
 import Sentry, {isSentryEnabled} from './sentry';
 import {InstalledPlugin} from '../plugins/plugin';
+import {openGitHubIssue} from './github-issue';
 
 const MAX_RETRIES = 10;
 
@@ -63,7 +63,12 @@ const getSentryIssue = async (eventId: string, tries = 0): Promise<SentryIssue |
 
 const getPrettyStack = (error: Error) => {
   const pluginsPath = path.join(app.getPath('userData'), 'plugins', 'node_modules');
-  return cleanStack(error.stack ?? '', {pretty: true, basePath: pluginsPath});
+  return (error.stack ?? '')
+    .replaceAll('\\', '/')
+    .split('\n')
+    .filter(line => !line.includes('node:internal/') && !line.includes('/electron.asar/'))
+    .map(line => line.replace(pluginsPath, '').replace(os.homedir(), '~'))
+    .join('\n');
 };
 
 const release = macosRelease();
@@ -120,7 +125,7 @@ export const showError = async (
     const openIssueButton = plugin.repoUrl && {
       label: 'Open Issue',
       action: () => {
-        openNewGitHubIssue({
+        openGitHubIssue({
           repoUrl: plugin.repoUrl,
           title,
           body: getIssueBody(title, detail)
@@ -174,7 +179,7 @@ export const showError = async (
               {
                 label: 'Open Issue',
                 action: () => {
-                  openNewGitHubIssue({
+                  openGitHubIssue({
                     user: 'wulkano',
                     repo: 'kap',
                     title,

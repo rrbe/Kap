@@ -2,7 +2,6 @@ import {RemoteState, getChannelNames} from './utils';
 import {ipcMain} from '../utils/ipc';
 import {BrowserWindow} from 'electron';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 const setupRemoteState = async <State, Actions extends Record<string, Function>>(name: string, callback: RemoteState<State, Actions>) => {
   const channelNames = getChannelNames(name);
 

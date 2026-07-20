@@ -9,8 +9,6 @@ import {
   shell,
   systemPreferences
 } from 'electron';
-import {is} from 'electron-util';
-import macosVersion from 'macos-version';
 import path from 'path';
 import {pathToFileURL} from 'url';
 
@@ -27,13 +25,14 @@ import {getAudioDevices, getDefaultInputDevice, getSelectedInputDeviceId} from '
 import {showError} from './utils/errors';
 import {buildWindowsMenu} from './utils/windows';
 import {windowManager} from './windows/manager';
+import {isDevelopment} from './utils/environment';
 
 const windowsMenus = new Map<number, Menu>();
 const configPlugins = new Map<number, InstalledPlugin>();
 
 const assertTrustedSender = (sender: Electron.WebContents) => {
   const page = new URL(sender.getURL());
-  const expected = is.development ? new URL('http://localhost:8000/') : pathToFileURL(path.join(app.getAppPath(), 'renderer/out/index.html'));
+  const expected = isDevelopment ? new URL('http://localhost:8000/') : pathToFileURL(path.join(app.getAppPath(), 'renderer/out/index.html'));
   if (page.origin !== expected.origin || page.pathname !== expected.pathname) {
     throw new Error(`Blocked preload IPC from ${page.origin}`);
   }
@@ -170,9 +169,9 @@ const setupSyncApi = () => {
         event.returnValue = {
           name: app.name,
           version: app.getVersion(),
-          development: is.development,
+          development: isDevelopment,
           homeDirectory: app.getPath('home'),
-          highlightClicksSupported: macosVersion.isGreaterThanOrEqualTo('15')
+          highlightClicksSupported: Number.parseInt(process.getSystemVersion(), 10) >= 15
         };
         break;
       case 'appearance': {

@@ -1,5 +1,5 @@
 import {app, BrowserWindow, ipcMain, IpcMainEvent} from 'electron';
-import {is} from 'electron-util';
+import {isDevelopment} from './environment';
 
 export const loadRoute = async (window: BrowserWindow, routeName: string, {openDevTools}: {openDevTools?: boolean} = {}) => {
   let onReady: (event: IpcMainEvent) => void;
@@ -19,7 +19,7 @@ export const loadRoute = async (window: BrowserWindow, routeName: string, {openD
   });
 
   let loading: Promise<void>;
-  if (is.development) {
+  if (isDevelopment) {
     loading = window.loadURL(`http://localhost:8000/?route=${encodeURIComponent(routeName)}`);
     window.webContents.openDevTools({mode: 'detach'});
   } else {

@@ -37,9 +37,7 @@ export default class PluginConfig extends Store {
         }
 
         const ajv = new Ajv({
-          format: 'full',
           useDefaults: true,
-          errorDataPath: 'property',
           allErrors: true
         });
 

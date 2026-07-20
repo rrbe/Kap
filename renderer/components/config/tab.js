@@ -131,7 +131,7 @@ class Tab extends React.Component {
             const schema = config[key];
             const type = schema.customType || (schema.enum ? 'select' : schema.type);
             const itemErrors = allErrors
-              .filter(({dataPath}) => dataPath.endsWith(key))
+              .filter(({dataPath, instancePath}) => (instancePath || dataPath || '').endsWith(key))
               .map(({message}) => `This ${message}`);
 
             return (

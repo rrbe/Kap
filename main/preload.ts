@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/promise-function-async */
 import {contextBridge, ipcRenderer} from 'electron';
 import type {KapApi} from './common/types/preload';
+
+declare const location: {href: string};
 
 const getRendererSendChannel = (windowId: number, channel: string) => `kap:renderer-call:${windowId}:${channel}`;
 const getResponseChannels = (channel: string) => {

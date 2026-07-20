@@ -12,9 +12,7 @@ export enum Format {
 export enum Encoding {
   h264 = 'h264',
   hevc = 'hevc',
-  // eslint-disable-next-line unicorn/prevent-abbreviations
   proRes422 = 'proRes422',
-  // eslint-disable-next-line unicorn/prevent-abbreviations
   proRes4444 = 'proRes4444'
 }
 

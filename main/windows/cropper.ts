@@ -1,8 +1,8 @@
 
 import {windowManager} from './manager';
 import {BrowserWindow, systemPreferences, dialog, screen, Display, app} from 'electron';
-import {is} from 'electron-util';
 import {setTimeout as delay} from 'timers/promises';
+import {isDevelopment} from '../utils/environment';
 
 import {settings} from '../common/settings';
 import {hasMicrophoneAccess, ensureMicrophonePermissions, openSystemPreferences, ensureScreenCapturePermissions} from '../common/system-permissions';
@@ -221,7 +221,7 @@ const openCropperWindow = async () => {
     screen.on('display-removed', onDisplayRemoved);
     screen.on('display-added', onDisplayAdded);
 
-    if (is.development) {
+    if (isDevelopment) {
       console.log(`Opened cropper windows in ${Date.now() - startedAt}ms`);
     }
   } catch (error) {

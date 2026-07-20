@@ -1,10 +1,10 @@
 import ffmpeg from 'ffmpeg-static';
-import util from 'electron-util';
+import {fixPathForAsarUnpack} from './environment';
 
 if (!ffmpeg) {
   throw new Error(`ffmpeg-static does not support ${process.platform}/${process.arch}`);
 }
 
-const ffmpegPath = util.fixPathForAsarUnpack(ffmpeg);
+const ffmpegPath = fixPathForAsarUnpack(ffmpeg);
 
 export default ffmpegPath;

@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
 import path from 'node:path';
+import electronPath from 'electron';
 import {createServer} from 'vite';
 
 const main = async () => {
@@ -10,7 +11,7 @@ const main = async () => {
   await server.listen();
   server.printUrls();
 
-  const electron = spawn('run-electron', ['.'], {
+  const electron = spawn(electronPath, ['.'], {
     env: process.env,
     stdio: 'inherit'
   });

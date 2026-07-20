@@ -1,8 +1,8 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import readline from 'readline';
 import path from 'path';
-import util from 'electron-util';
 import {temporaryFile} from './temporary-path';
+import {fixPathForAsarUnpack} from './environment';
 
 import {ApertureOptions} from '../common/types';
 
@@ -27,7 +27,7 @@ type Waiter = {
   timeout: NodeJS.Timeout;
 };
 
-const defaultBinaryPath = util.fixPathForAsarUnpack(path.join(__dirname, '..', 'kap-capture'));
+const defaultBinaryPath = fixPathForAsarUnpack(path.join(__dirname, '..', 'kap-capture'));
 
 export class ScreenRecorder {
   completion?: Promise<void>;

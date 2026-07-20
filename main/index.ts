@@ -1,5 +1,4 @@
 import {app} from 'electron';
-import {is, enforceMacOSAppLocation} from 'electron-util';
 import log from 'electron-log';
 import {autoUpdater} from 'electron-updater';
 
@@ -21,6 +20,8 @@ import {setUpExportsListeners} from './export';
 import {windowManager} from './windows/manager';
 import {stopRecordingWithNoEdit} from './aperture';
 import {setupPreloadApi} from './preload-api';
+import {enforceMacOSAppLocation} from './utils/app-location';
+import {isDevelopment} from './utils/environment';
 
 const filesToOpen: string[] = [];
 
@@ -42,7 +43,7 @@ app.on('open-file', (event, path) => {
 });
 
 const initializePlugins = async () => {
-  if (!is.development) {
+  if (!isDevelopment) {
     try {
       await plugins.upgrade();
     } catch (error) {
@@ -52,7 +53,7 @@ const initializePlugins = async () => {
 };
 
 const checkForUpdates = () => {
-  if (is.development) {
+  if (isDevelopment) {
     return false;
   }
 

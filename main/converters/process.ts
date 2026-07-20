@@ -21,7 +21,6 @@ const defaultProcessOptions = {
 };
 
 const createProcess = () => {
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
   return (outputPath: string, options: ProcessOptions, args: string[]) => {
     const {
       shouldTrack,

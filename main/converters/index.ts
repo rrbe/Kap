@@ -39,7 +39,6 @@ const croppingHandlers = new Map([
   [Encoding.h264, h264Crop]
 ]);
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 export const convertTo = (
   format: Format,
   options: Except<ConvertOptions, 'outputPath'> & {defaultFileName: string},
@@ -116,7 +115,6 @@ const convertWithEditPlugin = PCancelable.fn(
       croppedPath = options.inputPath;
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     const convertFunction = (args: string[], text = 'Converting') => new PCancelable<void>(async (resolve, reject, onCancel) => {
       try {
         const process = convert(

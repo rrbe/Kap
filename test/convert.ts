@@ -1,8 +1,8 @@
 import {serial as testAny, TestInterface} from 'ava';
 import fs from 'fs';
 import path from 'path';
+import {randomUUID} from 'crypto';
 import sinon from 'sinon';
-import uniqueString from 'unique-string';
 import {CancelError} from 'p-cancelable';
 
 const test = testAny as TestInterface<{outputPath: string}>;
@@ -14,7 +14,7 @@ import {Except, SetOptional} from 'type-fest';
 import {mockImport} from './helpers/mocks';
 import {Format} from '../main/common/types';
 
-const getRandomFileName = (ext: Format = Format.mp4) => `${uniqueString()}.${getFormatExtension(ext)}`;
+const getRandomFileName = (ext: Format = Format.mp4) => `${randomUUID()}.${getFormatExtension(ext)}`;
 
 const input = path.resolve(__dirname, 'fixtures', 'input.mp4');
 const retinaInput = path.resolve(__dirname, 'fixtures', 'input@2x.mp4');

@@ -95,7 +95,6 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
   return options.outputPath;
 });
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -124,7 +123,6 @@ const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToWebm = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -161,7 +159,6 @@ const convertToWebm = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToAv1 = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -199,7 +196,6 @@ const convertToAv1 = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -230,7 +226,6 @@ const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToApng = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -258,7 +253,6 @@ const convertToApng = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 export const crop = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Cropping', progress, estimate);
