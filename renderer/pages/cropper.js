@@ -1,5 +1,5 @@
 import React from 'react';
-import {Provider} from 'unstated';
+import {Provider} from '../utils/state-container';
 import {ipcRenderer} from 'electron-better-ipc';
 
 import Overlay from '../components/cropper/overlay';

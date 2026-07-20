@@ -1,5 +1,5 @@
 import React from 'react';
-import {Provider} from 'unstated';
+import {Provider} from '../utils/state-container';
 import classNames from 'classnames';
 import {ipcRenderer as ipc} from 'electron-better-ipc';
 

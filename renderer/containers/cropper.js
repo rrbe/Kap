@@ -1,5 +1,5 @@
 import nearestNormalAspectRatio from 'nearest-normal-aspect-ratio';
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
 
 import {minHeight, minWidth, resizeTo, setScreenSize} from '../utils/inputs';
 import {settings} from '../utils/settings';

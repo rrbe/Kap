@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 import App from './app';
 
@@ -26,4 +26,4 @@ if (!root) {
   throw new Error('Missing renderer root element');
 }
 
-ReactDOM.render(<App Component={Component}/>, root);
+createRoot(root).render(<App Component={Component}/>);

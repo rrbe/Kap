@@ -1,4 +1,4 @@
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
 
 export default class ConfigContainer extends Container {
   state = {selectedTab: 0};

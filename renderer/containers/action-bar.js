@@ -1,4 +1,4 @@
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
 import {settings} from '../utils/settings';
 
 const barWidth = 464;

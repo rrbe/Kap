@@ -1,4 +1,4 @@
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
 import {ipcRenderer as ipc} from 'electron-better-ipc';
 import {settings} from '../utils/settings';
 
