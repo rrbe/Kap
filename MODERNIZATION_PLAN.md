@@ -10,7 +10,7 @@
 - [x] 阶段 5：优化 ARM 导出管线
 - [x] 阶段 6：迁移录屏到 ScreenCaptureKit
 - [x] 阶段 7：删除和升级其余依赖，迁移 pnpm
-- [ ] 阶段 8：跨架构回归与发布准备
+- [x] 阶段 8：跨架构回归与发布准备
 
 ## 目标
 
@@ -250,6 +250,15 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 - arm64 应用和所有随包二进制均无需 Rosetta。
 - 所有自动化检查通过；无法自动化的 macOS 流程有明确 smoke test 记录。
 - 性能结果达到各阶段标准，或对未达标项提供 profile 证据和后续 issue。
+
+### 实施结果
+
+- 删除了 `mac-open-with`、`mac-windows`、`macos-audio-devices` 三个只提供 x86_64 二进制的包，用一个项目内的最小 Swift 助手承接音频设备、窗口和“打开方式”能力；助手与录屏助手均为 arm64+x86_64 universal。
+- arm64 和 x64 分别在对应架构的 Node 24、Electron、FFmpeg 和权限原生模块下完成安装、构建、测试和打包。最终 app 的全部 Mach-O 文件均为目标架构或 universal，不再存在 Rosetta 热路径。
+- Intel FFmpeg 的 VideoToolbox 质量参数与 arm64 构建不同；x64 改用随分辨率和帧率计算的码率，并允许 VideoToolbox 软件回退，H.264/HEVC 转换回归通过。
+- 生成并校验了 147 MB arm64 DMG 和 154 MB x64 DMG；最低系统版本均为 macOS 13。最终 arm64/x64 app 分别约 402 MB/436 MB。
+- CircleCI 迁移到 pnpm、Node 24、Xcode 26.3 和 Apple silicon executor；arm64/x64 独立安装并检查包内 Mach-O，同时生成包含两个架构 ZIP 的更新 metadata。
+- 本机只有 Apple Development 身份，没有 Developer ID Application 证书和公证凭据。因此本地产物明确为未签名验收包；正式签名、公证、Gatekeeper 和真实更新源验证由 CI 凭据门执行，未把它们误报为本机通过。
 
 ## 提交与回滚边界
 
