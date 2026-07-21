@@ -42,13 +42,10 @@ jobs:
           name: Check arm64 package architecture
           command: pnpm check:app-architecture dist/mac-arm64/Kap.app arm64
       - run:
-          name: Verify signed arm64 release
+          name: Verify ad-hoc signed arm64 package
           command: |
-            if [[ -n "${CIRCLE_TAG:-}" ]]; then
-              codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Kap.app
-              spctl --assess --verbose --type exec dist/mac-arm64/Kap.app
-              xcrun stapler validate dist/mac-arm64/Kap.app
-            fi
+            codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Kap.app
+            codesign --display --verbose=4 dist/mac-arm64/Kap.app 2>&1 | grep -q '^Signature=adhoc$'
       - run:
           name: Collect arm64 artifacts
           command: |
@@ -102,13 +99,10 @@ jobs:
           name: Check x64 package architecture
           command: pnpm check:app-architecture dist/mac/Kap.app x64
       - run:
-          name: Verify signed x64 release
+          name: Verify ad-hoc signed x64 package
           command: |
-            if [[ -n "${CIRCLE_TAG:-}" ]]; then
-              codesign --verify --deep --strict --verbose=2 dist/mac/Kap.app
-              spctl --assess --verbose --type exec dist/mac/Kap.app
-              xcrun stapler validate dist/mac/Kap.app
-            fi
+            codesign --verify --deep --strict --verbose=2 dist/mac/Kap.app
+            codesign --display --verbose=4 dist/mac/Kap.app 2>&1 | grep -q '^Signature=adhoc$'
       - run:
           name: Collect x64 artifacts
           command: |
@@ -137,21 +131,6 @@ jobs:
       - store_artifacts:
           path: workspace/latest-mac.yml
 
-  sentry-release:
-    docker:
-      - image: cimg/node:24.11
-    environment:
-      SENTRY_ORG: wulkano-l0
-      SENTRY_PROJECT: kap
-    steps:
-      - checkout
-      - run: |
-          curl -sL https://sentry.io/get-cli/ | bash
-          export SENTRY_RELEASE=$(node -p "'kap@' + require('./package.json').version")
-          sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
-          sentry-cli releases set-commits --auto $SENTRY_RELEASE
-          sentry-cli releases finalize $SENTRY_RELEASE
-
 workflows:
   build:
     jobs:
@@ -170,11 +149,3 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - sentry-release:
-          requires:
-            - release-metadata
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/

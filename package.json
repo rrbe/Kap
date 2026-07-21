@@ -4,8 +4,8 @@
   "version": "3.6.0",
   "description": "An open-source screen recorder built with web technology",
   "license": "MIT",
-  "repository": "wulkano/kap",
-  "homepage": "https://getkap.co",
+  "repository": "rrbe/Kap",
+  "homepage": "https://github.com/rrbe/Kap",
   "author": {
     "name": "Wulkano",
     "email": "hello@wulkano.com",
@@ -31,14 +31,12 @@
     "pack:dev": "pnpm build && electron-builder --dir --config.mac.type=development",
     "postinstall": "node -e \"require('electron')\" && electron-builder install-app-deps",
     "prepare": "husky",
-    "sentry-version": "echo \"$npm_package_name@$npm_package_version\"",
     "dev": "vite --config renderer/vite.config.ts"
   },
   "bundle": {
     "name": "Kap"
   },
   "dependencies": {
-    "@sentry/electron": "^7.15.0",
     "ajv": "^8.20.0",
     "classnames": "^2.2.6",
     "electron-log": "^5.4.4",
@@ -264,7 +262,7 @@
     ]
   },
   "build": {
-    "appId": "com.wulkano.kap",
+    "appId": "io.github.rrbe.kap",
     "protocols": {
       "name": "kap",
       "schemes": [
@@ -287,8 +285,9 @@
       "category": "public.app-category.productivity",
       "minimumSystemVersion": "13.0.0",
       "darkModeSupport": true,
+      "identity": "-",
       "hardenedRuntime": true,
-      "notarize": true,
+      "notarize": false,
       "entitlements": "./build/entitlements.mac.inherit.plist",
       "extendInfo": {
         "NSScreenCaptureUsageDescription": "Kap needs access to the screen to record it.",

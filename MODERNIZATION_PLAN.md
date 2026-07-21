@@ -258,7 +258,7 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 - Intel FFmpeg 的 VideoToolbox 质量参数与 arm64 构建不同；x64 改用随分辨率和帧率计算的码率，并允许 VideoToolbox 软件回退，H.264/HEVC 转换回归通过。
 - 生成并校验了 147 MB arm64 DMG 和 154 MB x64 DMG；最低系统版本均为 macOS 13。最终 arm64/x64 app 分别约 402 MB/436 MB。
 - CircleCI 迁移到 pnpm、Node 24、Xcode 26.3 和 Apple silicon executor；arm64/x64 独立安装并检查包内 Mach-O，同时生成包含两个架构 ZIP 的更新 metadata。
-- 本机只有 Apple Development 身份，没有 Developer ID Application 证书和公证凭据。因此本地产物明确为未签名验收包；正式签名、公证、Gatekeeper 和真实更新源验证由 CI 凭据门执行，未把它们误报为本机通过。
+- 现代化验收时本机只有 Apple Development 身份，没有 Developer ID Application 证书和公证凭据，因此当时的本地产物仅用于结构和功能验收。仓库成为独立 fork 后，发行配置改为不依赖原作者证书的 ad-hoc 签名；CI 验证签名完整性，但不会把它描述成 Apple 公证或 Gatekeeper 信任。
 
 ## 提交与回滚边界
 

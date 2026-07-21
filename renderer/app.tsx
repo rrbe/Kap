@@ -4,7 +4,6 @@ import {ipcRenderer} from 'utils/ipc';
 
 import useDarkMode from './hooks/dark-mode';
 import GlobalStyles from './utils/global-styles';
-import SentryErrorBoundary from './utils/sentry-error-boundary';
 import {WindowStateProvider} from './hooks/window-state';
 
 const App = ({Component}: {Component: ComponentType}) => {
@@ -17,12 +16,10 @@ const App = ({Component}: {Component: ComponentType}) => {
 
   return (
     <div className={className}>
-      <SentryErrorBoundary>
-        <WindowStateProvider>
-          <Component/>
-          <GlobalStyles/>
-        </WindowStateProvider>
-      </SentryErrorBoundary>
+      <WindowStateProvider>
+        <Component/>
+        <GlobalStyles/>
+      </WindowStateProvider>
     </div>
   );
 };

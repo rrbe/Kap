@@ -4,36 +4,30 @@
 
 Run `nvm install && corepack enable`, then `pnpm install --frozen-lockfile`. `pnpm start` builds the main process, starts the Vite development server, and launches Kap.
 
-We strongly recommend installing an [XO editor plugin](https://github.com/sindresorhus/xo#editor-plugins) for JavaScript linting and a [Stylelint editor plugin](https://github.com/stylelint/stylelint/blob/master/docs/user-guide/integrations/editor.md) for CSS linting. Both of these support auto-fix on save.
+We strongly recommend installing an [XO editor plugin](https://github.com/sindresorhus/xo#editor-plugins) for JavaScript linting and a [Stylelint editor plugin](https://github.com/stylelint/stylelint/blob/master/docs/user-guide/integrations/editor.md) for CSS linting. Both support auto-fix on save.
 
 ## Releasing a new version
 
-The macOS release requires a `Developer ID Application` certificate and Apple notarization credentials. Store these as CircleCI secrets; never commit them:
+Releases are ad-hoc signed with electron-builder and are not notarized. No Developer ID certificate, Apple account, or original-project signing secret is required. CircleCI builds arm64 natively and x64 under Rosetta with an x64 Node installation. Each job runs the test suite, packages DMG/ZIP artifacts, verifies the ad-hoc signature, and rejects apps containing a wrong-architecture Mach-O file.
 
-- `CSC_LINK` and `CSC_KEY_PASSWORD` for the exported `.p12` certificate.
-- Either `APPLE_API_KEY`, `APPLE_API_KEY_ID`, and `APPLE_API_ISSUER`, or the Apple ID notarization variables supported by electron-builder.
+The metadata job combines both ZIP files into one `latest-mac.yml` so electron-updater can select the correct architecture.
 
-CircleCI builds arm64 natively and x64 under Rosetta with an x64 Node installation. Each job runs the test suite, packages DMG/ZIP artifacts, and rejects target apps containing a wrong-architecture Mach-O file. The metadata job combines both ZIP files into one `latest-mac.yml` so electron-updater can select the correct architecture.
+1. Update the version in `package.json` and commit it using the version number as the summary, for example `chore: release 3.7.0`.
+2. Tag and push the release: `git tag -a "v3.7.0" -m "v3.7.0" && git push --follow-tags`.
+3. Create a draft under [GitHub Releases](https://github.com/rrbe/Kap/releases) for that tag.
+4. Wait for both CircleCI architecture jobs and the metadata job to complete.
+5. Attach both architecture DMGs, ZIP files, blockmaps, and `latest-mac.yml` to the draft.
+6. Confirm `codesign --verify --deep --strict` passes and `codesign --display --verbose=4` reports `Signature=adhoc` for both apps.
+7. Verify both DMGs with `hdiutil verify`, document that the release is not notarized, and publish it.
 
-- Go to https://github.com/wulkano/kap/releases
-- Click `Draft a new release`
-- Write the new version, prefixed with `v`, in the `Tag version` field (Example: `v2.0.0`)
-- Leave the `Release title` field blank
-- Write release notes
-- Click `Save draft`
-- Change `version` [here](https://github.com/wulkano/kap/blob/main/package.json#L4) to the new version and use the version number as the commit title (Example: `2.0.0`)
-- CircleCI will build the two architectures and expose the DMG, ZIP, blockmap, and `latest-mac.yml` artifacts.
-- Verify both build jobs are green. Attach all release artifacts to the GitHub draft.
-- Confirm `codesign --verify --deep --strict`, `spctl --assess --type exec`, and `xcrun stapler validate` pass for both apps before publishing.
-- Publish the release only after the update metadata and both architecture-specific ZIP files are attached.
+The README installation command must remain in the release notes because Gatekeeper does not trust ad-hoc signatures.
 
 ## Releasing a new beta version
 
-- Check out the `beta` branch: `git switch beta`
-- Merge the current `main` branch: `git merge origin/main`
-- Change the `version` number in `package.json`
-- Commit the beta version and any beta customizations as a new conventional commit.
-- Push the beta branch without rewriting its history.
-- Tag a release with the version number in package.json and push it: `git tag -a "v2.0.0-beta.3" -m "v2.0.0-beta.3" && git push --follow-tags`
-- Create a GitHub release draft for the tag and mark it as a pre-release.
-- When CircleCI succeeds, attach both architecture artifacts and the combined update metadata, verify signing/notarization, and publish the draft.
+1. Check out the `beta` branch: `git switch beta`.
+2. Merge the current `main` branch: `git merge origin/main`.
+3. Update the version in `package.json` and commit the beta version with a conventional commit.
+4. Push the beta branch without rewriting its history.
+5. Tag and push the version, for example `git tag -a "v3.7.0-beta.1" -m "v3.7.0-beta.1" && git push --follow-tags`.
+6. Create a GitHub release draft for the tag and mark it as a pre-release.
+7. Attach the two-architecture artifacts and combined metadata after CircleCI succeeds, verify the ad-hoc signatures, and publish the draft.

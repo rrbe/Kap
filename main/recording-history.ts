@@ -12,7 +12,6 @@ import {plugins} from './plugins';
 import {generateTimestampedName} from './utils/timestamped-name';
 import {Video} from './video';
 import {ApertureOptions} from './common/types';
-import Sentry, {isSentryEnabled} from './utils/sentry';
 
 import ffmpegPath from './utils/ffmpeg-path';
 import {temporaryFile} from './utils/temporary-path';
@@ -239,11 +238,6 @@ const handleCorruptRecording = async (recording: ActiveRecording, error: string)
   const applicableErrors = knownErrors.filter(({test}) => test(error));
 
   if (applicableErrors.length === 0) {
-    if (isSentryEnabled) {
-      // Collect info about possible unknown errors, to see if we can implement fixes using ffmpeg
-      Sentry.captureException(new Error(`Corrupt recording: ${error}`));
-    }
-
     return windowManager.dialog?.open(options);
   }
 

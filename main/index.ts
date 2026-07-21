@@ -3,7 +3,6 @@ import log from 'electron-log';
 import {autoUpdater} from 'electron-updater';
 
 import './windows/load';
-import './utils/sentry';
 
 import {settings} from './common/settings';
 import {plugins} from './plugins';
@@ -85,7 +84,7 @@ const checkForUpdates = () => {
   setupRemoteStates();
 
   app.dock?.hide();
-  app.setAboutPanelOptions({copyright: 'Copyright © Wulkano'});
+  app.setAboutPanelOptions({copyright: 'Copyright © Wulkano and Kap contributors'});
 
   // Ensure the app is in the Applications folder
   enforceMacOSAppLocation();
