@@ -1,6 +1,4 @@
 import {app} from 'electron';
-import log from 'electron-log';
-import {autoUpdater} from 'electron-updater';
 
 import './windows/load';
 
@@ -51,30 +49,6 @@ const initializePlugins = async () => {
   }
 };
 
-const checkForUpdates = () => {
-  if (isDevelopment) {
-    return false;
-  }
-
-  const checkForUpdates = async () => {
-    try {
-      await autoUpdater.checkForUpdates();
-    } catch (error) {
-      autoUpdater.logger?.error(error);
-    }
-  };
-
-  // For auto-update debugging in Console.app
-  autoUpdater.logger = log;
-  // @ts-expect-error
-  autoUpdater.logger.transports.file.level = 'info';
-
-  setInterval(checkForUpdates, 60 * 60 * 1000);
-
-  checkForUpdates();
-  return true;
-};
-
 // Prepare the renderer once the app is ready
 (async () => {
   await app.whenReady();
@@ -113,8 +87,6 @@ const checkForUpdates = () => {
   ) {
     windowManager.cropper?.open();
   }
-
-  checkForUpdates();
 })();
 
 app.on('window-all-closed', () => {

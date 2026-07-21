@@ -169,8 +169,8 @@ class General extends React.Component {
         </Item>
         <Item
           key="allowAnalytics"
-          title="Diagnostic logs"
-          subtitle="Write anonymous usage events to the local app log"
+          title="Console diagnostics"
+          subtitle="Print anonymous usage events to the process console; nothing is saved"
         >
           <Switch tabIndex={tabIndex} checked={allowAnalytics} onClick={() => toggleSetting('allowAnalytics')}/>
         </Item>

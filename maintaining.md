@@ -8,17 +8,17 @@ We strongly recommend installing an [XO editor plugin](https://github.com/sindre
 
 ## Releasing a new version
 
-Releases are ad-hoc signed with electron-builder and are not notarized. No Developer ID certificate, Apple account, or original-project signing secret is required. CircleCI builds arm64 natively and x64 under Rosetta with an x64 Node installation. Each job runs the test suite, packages DMG/ZIP artifacts, verifies the ad-hoc signature, and rejects apps containing a wrong-architecture Mach-O file.
+Releases are ad-hoc signed with electron-builder and are not notarized. No Developer ID certificate, Apple account, or original-project signing secret is required. CircleCI builds arm64 natively and x64 under Rosetta with an x64 Node installation. Each job runs the test suite, packages a DMG, verifies the ad-hoc signature, and rejects apps containing a wrong-architecture Mach-O file.
 
-The metadata job combines both ZIP files into one `latest-mac.yml` so electron-updater can select the correct architecture.
+Ad-hoc signatures do not provide a stable identity across versions, so releases support manual upgrades only. Do not restore automatic updates without first introducing and protecting a stable signing identity.
 
 1. Update the version in `package.json` and commit it using the version number as the summary, for example `chore: release 3.7.0`.
 2. Tag and push the release: `git tag -a "v3.7.0" -m "v3.7.0" && git push --follow-tags`.
 3. Create a draft under [GitHub Releases](https://github.com/rrbe/Kap/releases) for that tag.
-4. Wait for both CircleCI architecture jobs and the metadata job to complete.
-5. Attach both architecture DMGs, ZIP files, blockmaps, and `latest-mac.yml` to the draft.
+4. Wait for both CircleCI architecture jobs to complete.
+5. Attach both architecture DMGs to the draft.
 6. Confirm `codesign --verify --deep --strict` passes and `codesign --display --verbose=4` reports `Signature=adhoc` for both apps.
-7. Verify both DMGs with `hdiutil verify`, document that the release is not notarized, and publish it.
+7. Verify both DMGs with `hdiutil verify`, document that the release is not notarized and requires manual upgrades, and publish it.
 
 The README installation command must remain in the release notes because Gatekeeper does not trust ad-hoc signatures.
 
@@ -30,4 +30,4 @@ The README installation command must remain in the release notes because Gatekee
 4. Push the beta branch without rewriting its history.
 5. Tag and push the version, for example `git tag -a "v3.7.0-beta.1" -m "v3.7.0-beta.1" && git push --follow-tags`.
 6. Create a GitHub release draft for the tag and mark it as a pre-release.
-7. Attach the two-architecture artifacts and combined metadata after CircleCI succeeds, verify the ad-hoc signatures, and publish the draft.
+7. Attach both architecture DMGs after CircleCI succeeds, verify the ad-hoc signatures, and publish the draft.

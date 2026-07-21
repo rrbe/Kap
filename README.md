@@ -27,7 +27,7 @@ This fork exists to address the problems that had accumulated:
 - Added unchanged-MP4 copy, VideoToolbox H.264/HEVC encoding with software fallback, and FFmpeg-native GIF generation.
 - Replaced Intel-only native packages with one universal Swift system helper.
 - Migrated from Yarn to pnpm, reduced direct dependencies, and removed known production dependency vulnerabilities.
-- Added separate arm64/x64 CI packaging, packaged-binary architecture checks, and multi-architecture update metadata.
+- Added separate arm64/x64 CI packaging and packaged-binary architecture checks.
 
 The implementation plan, measurements, and validation details are in [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md) and [docs/modernization-baseline.md](docs/modernization-baseline.md).
 
@@ -36,6 +36,8 @@ The implementation plan, measurements, and validation details are in [MODERNIZAT
 Download the latest DMG from [GitHub Releases](https://github.com/rrbe/Kap/releases). Choose the `arm64` build for Apple silicon or the `x64` build for an Intel Mac.
 
 Kap requires macOS 13 or newer.
+
+Automatic updates are disabled because ad-hoc signatures do not provide a stable identity across releases. Install upgrades manually from the Releases page.
 
 ### Gatekeeper notice
 

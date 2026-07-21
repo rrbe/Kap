@@ -19,7 +19,7 @@
 - 修复 Apple Silicon 机器上选区窗口、菜单、录制和导出的主要性能瓶颈。
 - 删除 Next.js、`electron-next`、Electron `remote` 等不再需要或已经淘汰的架构。
 - 将 Electron、React、TypeScript、构建工具和其余依赖升级到受支持版本。
-- 保留现有录制、编辑、导出、插件和自动更新能力。
+- 保留现有录制、编辑、导出和插件能力；独立 fork 的 ad-hoc 签名发行版改为手动升级。
 - 让每个阶段都能单独测试、提交和回滚，避免一次性大升级后无法定位回归。
 
 ## 当前基线
@@ -35,7 +35,7 @@
 
 ```text
 Electron main
-  ├─ 窗口、菜单、更新、插件和文件系统
+  ├─ 窗口、菜单、插件和文件系统
   ├─ preload + 明确的 IPC 接口
   ├─ ScreenCaptureKit 原生录制助手
   └─ 原生 arm64/universal 导出工具
@@ -132,23 +132,23 @@ Vite renderer
 
 ### 工作内容
 
-- 在阶段 2、3 解除阻塞后升级 Electron 及 electron-builder/updater/log/store 等配套包。
+- 在阶段 2、3 解除阻塞后升级 Electron 及 electron-builder/store 等配套包。
 - 迁移过程中按 Electron breaking changes 分检查点验证，不长期停留在已结束支持的中间版本。
 - 当前最终目标为 Electron 43；实施时以当时仍受官方支持的稳定版本为准。
 - 删除已经成为默认值的兼容开关和旧 Electron workaround。
-- 检查权限、协议、自动更新、签名、公证、窗口透明度和 macOS 菜单行为。
+- 检查权限、协议、签名、公证、窗口透明度和 macOS 菜单行为。
 
 ### 完成标准
 
 - `process.arch` 在 arm64 包中为 `arm64`，应用无需 Rosetta。
 - 冷启动、窗口创建和内存数据不劣于阶段 1 基线。
-- 签名、公证、DMG、协议唤起和自动更新 smoke test 通过。
+- 签名、公证、DMG 和协议唤起 smoke test 通过。
 
 ### 实施结果
 
-- Electron 已升级到 43.1.1，配套升级 electron-builder、updater、log、store 和 util。
+- Electron 已升级到 43.1.1，配套升级 electron-builder 和 store，并在独立 fork 阶段删除无法与 ad-hoc 签名兼容的自动更新链路。
 - 所有 BrowserWindow 进一步启用 sandbox；删除旧 `file://` 协议 workaround 和调试用 DYLD entitlement。
-- electron-builder 改用内置公证配置；本地 arm64 目录包已通过签名校验，但当前环境没有 Apple 公证凭据，因此真实公证、DMG、协议唤起和自动更新发布链路统一留到阶段 8 验证。
+- electron-builder 改用内置公证配置；本地 arm64 目录包已通过签名校验，但当前环境没有 Apple 公证凭据，因此真实公证、DMG 和协议唤起统一留到阶段 8 验证。
 - 最低系统版本已由 macOS 10.12 提高到 12.0；阶段 6 再决定是否随 ScreenCaptureKit 提高到 13。
 
 ## 阶段 5：优化 ARM 导出管线
@@ -242,7 +242,7 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 
 - 在 arm64 和 x64 上执行安装、测试、打包和关键用户流程。
 - 对比最终版与阶段 0 的启动、Cropper、菜单、录制、导出、CPU、内存和包体积。
-- 验证签名、公证、Sparkle/electron-updater 更新、插件升级和历史录制恢复。
+- 验证签名、DMG、手动升级说明、插件升级和历史录制恢复。
 - 更新 README、contributing、maintaining 和发布说明。
 
 ### 发布门槛
@@ -257,7 +257,7 @@ ScreenCaptureKit/Aperture 3 的最简路径需要把最低系统版本提高到 
 - arm64 和 x64 分别在对应架构的 Node 24、Electron、FFmpeg 和权限原生模块下完成安装、构建、测试和打包。最终 app 的全部 Mach-O 文件均为目标架构或 universal，不再存在 Rosetta 热路径。
 - Intel FFmpeg 的 VideoToolbox 质量参数与 arm64 构建不同；x64 改用随分辨率和帧率计算的码率，并允许 VideoToolbox 软件回退，H.264/HEVC 转换回归通过。
 - 生成并校验了 147 MB arm64 DMG 和 154 MB x64 DMG；最低系统版本均为 macOS 13。最终 arm64/x64 app 分别约 402 MB/436 MB。
-- CircleCI 迁移到 pnpm、Node 24、Xcode 26.3 和 Apple silicon executor；arm64/x64 独立安装并检查包内 Mach-O，同时生成包含两个架构 ZIP 的更新 metadata。
+- CircleCI 迁移到 pnpm、Node 24、Xcode 26.3 和 Apple silicon executor；arm64/x64 独立安装、检查包内 Mach-O 并分别生成 DMG。
 - 现代化验收时本机只有 Apple Development 身份，没有 Developer ID Application 证书和公证凭据，因此当时的本地产物仅用于结构和功能验收。仓库成为独立 fork 后，发行配置改为不依赖原作者证书的 ad-hoc 签名；CI 验证签名完整性，但不会把它描述成 Apple 公证或 Gatekeeper 信任。
 
 ## 提交与回滚边界

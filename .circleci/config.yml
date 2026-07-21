@@ -51,11 +51,6 @@ jobs:
           command: |
             mkdir -p workspace/arm64
             cp dist/Kap-*-arm64.dmg* workspace/arm64/
-            cp dist/Kap-*-arm64.zip* workspace/arm64/
-      - persist_to_workspace:
-          root: workspace
-          paths:
-            - arm64
       - store_artifacts:
           path: workspace/arm64
       - store_test_results:
@@ -108,28 +103,10 @@ jobs:
           command: |
             mkdir -p workspace/x64
             cp dist/Kap-*-x64.dmg* workspace/x64/
-            cp dist/Kap-*-x64.zip* workspace/x64/
-      - persist_to_workspace:
-          root: workspace
-          paths:
-            - x64
       - store_artifacts:
           path: workspace/x64
       - store_test_results:
           path: ~/reports
-
-  release-metadata:
-    docker:
-      - image: cimg/node:24.11
-    steps:
-      - checkout
-      - attach_workspace:
-          at: workspace
-      - run:
-          name: Create multi-architecture update metadata
-          command: node scripts/create-update-metadata.mjs workspace/arm64/Kap-*-arm64.zip workspace/x64/Kap-*-x64.zip workspace/latest-mac.yml
-      - store_artifacts:
-          path: workspace/latest-mac.yml
 
 workflows:
   build:
@@ -139,13 +116,6 @@ workflows:
             tags:
               only: /.*/
       - build-x64:
-          filters:
-            tags:
-              only: /.*/
-      - release-metadata:
-          requires:
-            - build-arm64
-            - build-x64
           filters:
             tags:
               only: /.*/

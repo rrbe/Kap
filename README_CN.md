@@ -27,7 +27,7 @@ Kap 是一款开源的 macOS 录屏工具。这个仓库是一个独立维护的
 - 增加未修改 MP4 直拷、带软件回退的 VideoToolbox H.264/HEVC 编码，以及基于 FFmpeg 的 GIF 生成。
 - 用一个 universal Swift 系统辅助程序替换仅支持 Intel 的原生依赖。
 - 从 Yarn 迁移到 pnpm，减少直接依赖，并清除生产依赖中的已知漏洞。
-- 增加 arm64/x64 独立 CI 打包、包内二进制架构检查和多架构更新元数据。
+- 增加 arm64/x64 独立 CI 打包和包内二进制架构检查。
 
 详细实施计划、性能数据和验证结果见 [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md) 与 [docs/modernization-baseline.md](docs/modernization-baseline.md)。
 
@@ -36,6 +36,8 @@ Kap 是一款开源的 macOS 录屏工具。这个仓库是一个独立维护的
 从 [GitHub Releases](https://github.com/rrbe/Kap/releases) 下载最新 DMG。Apple silicon Mac 选择 `arm64`，Intel Mac 选择 `x64`。
 
 Kap 要求 macOS 13 或更高版本。
+
+由于 ad-hoc 签名无法在不同版本之间提供稳定身份，自动更新已禁用。请从 Releases 页面手动下载安装新版本。
 
 ### Gatekeeper 提示
 
