@@ -1,5 +1,5 @@
 import {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import {ipcRenderer as ipc} from 'electron-better-ipc';
+import {ipcRenderer as ipc} from 'utils/ipc';
 
 const WindowStateContext = createContext<any>(undefined);
 
@@ -23,7 +23,6 @@ export const WindowStateProvider = (props: {children: ReactNode}) => {
 
 // Should not be used directly
 // Each page should export its own typed hook
-// eslint-disable-next-line @typescript-eslint/comma-dangle
 const useWindowState = <T,>() => useContext<T>(WindowStateContext);
 
 export default useWindowState;

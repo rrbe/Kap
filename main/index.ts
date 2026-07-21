@@ -1,13 +1,9 @@
 import {app} from 'electron';
-import {is, enforceMacOSAppLocation} from 'electron-util';
 import log from 'electron-log';
 import {autoUpdater} from 'electron-updater';
-import toMilliseconds from '@sindresorhus/to-milliseconds';
 
 import './windows/load';
 import './utils/sentry';
-
-require('electron-timber').hookConsole({main: true, renderer: true});
 
 import {settings} from './common/settings';
 import {plugins} from './plugins';
@@ -22,14 +18,16 @@ import {hasActiveRecording, cleanPastRecordings} from './recording-history';
 import {setupRemoteStates} from './remote-states';
 import {setUpExportsListeners} from './export';
 import {windowManager} from './windows/manager';
-import {setupProtocol} from './utils/protocol';
 import {stopRecordingWithNoEdit} from './aperture';
-
-const prepareNext = require('electron-next');
+import {setupPreloadApi} from './preload-api';
+import {enforceMacOSAppLocation} from './utils/app-location';
+import {isDevelopment} from './utils/environment';
 
 const filesToOpen: string[] = [];
 
 let onExitCleanupComplete = false;
+
+setupPreloadApi();
 
 app.commandLine.appendSwitch('--enable-features', 'OverlayScrollbar');
 
@@ -45,7 +43,7 @@ app.on('open-file', (event, path) => {
 });
 
 const initializePlugins = async () => {
-  if (!is.development) {
+  if (!isDevelopment) {
     try {
       await plugins.upgrade();
     } catch (error) {
@@ -55,7 +53,7 @@ const initializePlugins = async () => {
 };
 
 const checkForUpdates = () => {
-  if (is.development) {
+  if (isDevelopment) {
     return false;
   }
 
@@ -72,7 +70,7 @@ const checkForUpdates = () => {
   // @ts-expect-error
   autoUpdater.logger.transports.file.level = 'info';
 
-  setInterval(checkForUpdates, toMilliseconds({hours: 1}));
+  setInterval(checkForUpdates, 60 * 60 * 1000);
 
   checkForUpdates();
   return true;
@@ -86,15 +84,11 @@ const checkForUpdates = () => {
   // Initialize remote states
   setupRemoteStates();
 
-  setupProtocol();
-
-  app.dock.hide();
+  app.dock?.hide();
   app.setAboutPanelOptions({copyright: 'Copyright © Wulkano'});
 
   // Ensure the app is in the Applications folder
   enforceMacOSAppLocation();
-
-  await prepareNext('./renderer');
 
   // Ensure all plugins are up to date
   initializePlugins();
@@ -124,9 +118,8 @@ const checkForUpdates = () => {
   checkForUpdates();
 })();
 
-app.on('window-all-closed', (event: any) => {
-  app.dock.hide();
-  event.preventDefault();
+app.on('window-all-closed', () => {
+  app.dock?.hide();
 });
 
 app.on('will-finish-launching', () => {

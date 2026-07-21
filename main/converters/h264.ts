@@ -1,20 +1,52 @@
 import PCancelable from 'p-cancelable';
-import tempy from 'tempy';
-import {compress, convert} from './process';
+import {temporaryFile} from '../utils/temporary-path';
+import {convert} from './process';
 import {areDimensionsEven, conditionalArgs, ConvertOptions, makeEven} from './utils';
 import {settings} from '../common/settings';
 import os from 'os';
 import {Format} from '../common/types';
 import fs from 'fs';
 
+const hardwareAcceleratedExports = () => process.platform === 'darwin' && settings.get('hardwareAcceleratedExports', true);
+
+type HardwareEncoderOptions = Pick<ConvertOptions, 'width' | 'height' | 'fps'> & {
+  architecture?: NodeJS.Architecture;
+};
+
+const getVideoBitrate = ({width, height, fps}: HardwareEncoderOptions) =>
+  Math.max(1_000_000, Math.round(width * height * fps * 0.1)).toString();
+
+export const getVideoEncoderArgs = (
+  format: Format,
+  useHardwareAcceleration = hardwareAcceleratedExports(),
+  options: HardwareEncoderOptions = {width: 1920, height: 1080, fps: 30}
+) => {
+  const codec = format === Format.mp4 ? 'h264_videotoolbox' : 'hevc_videotoolbox';
+
+  if (useHardwareAcceleration) {
+    const encoder = ['-c:v', codec, '-allow_sw', '1'];
+    // The Intel ffmpeg-static build rejects VideoToolbox quality-scale options.
+    return options.architecture === 'x64' || (options.architecture === undefined && process.arch === 'x64')
+      ? [...encoder, '-b:v', getVideoBitrate(options)]
+      : [...encoder, '-q:v', '65'];
+  }
+
+  if (format === Format.mp4) {
+    return ['-c:v', 'libx264'];
+  }
+
+  return ['-c:v', 'libx265', '-preset', 'medium'];
+};
+
 // `time ffmpeg -i original.mp4 -vf fps=30,scale=480:-1::flags=lanczos,palettegen palette.png`
 // `time ffmpeg -i original.mp4 -i palette.png -filter_complex 'fps=30,scale=-1:-1:flags=lanczos[x]; [x][1:v]paletteuse' palette.gif`
 const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PCancelable.OnCancelFunction) => {
-  const palettePath = tempy.file({extension: 'png'});
+  const palettePath = temporaryFile({extension: 'png'});
+  const paletteColors = settings.get('lossyCompression', false) ? 128 : 256;
 
   const paletteProcess = convert(palettePath, {shouldTrack: false}, conditionalArgs(
     '-i', options.inputPath,
-    '-vf', `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''},palettegen`,
+    '-vf', `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''},palettegen=max_colors=${paletteColors}:stats_mode=diff`,
     {
       args: [
         '-ss',
@@ -51,7 +83,7 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
         '-i',
         palettePath,
         '-filter_complex',
-        `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''}[x]; [x][1:v]paletteuse`
+        `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''}[x]; [x][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle`
       ],
       if: hasPalette
     },
@@ -81,27 +113,9 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
 
   await conversionProcess;
 
-  const compressProcess = compress(options.outputPath, {
-    onProgress: (progress, estimate) => {
-      options.onProgress('Compressing', progress, estimate);
-    },
-    startTime: options.startTime,
-    endTime: options.endTime
-  }, [
-    '--batch',
-    options.outputPath
-  ]);
-
-  onCancel(() => {
-    compressProcess.cancel();
-  });
-
-  await compressProcess;
-
   return options.outputPath;
 });
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -111,6 +125,7 @@ const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
+  getVideoEncoderArgs(Format.mp4, hardwareAcceleratedExports(), options),
   {
     args: ['-an'],
     if: options.shouldMute
@@ -129,7 +144,6 @@ const convertToMp4 = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToWebm = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -166,7 +180,6 @@ const convertToWebm = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToAv1 = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -204,7 +217,6 @@ const convertToAv1 = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -214,9 +226,8 @@ const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
 }, conditionalArgs(
   '-i', options.inputPath,
   '-r', options.fps.toString(),
-  '-c:v', 'libx265',
+  getVideoEncoderArgs(Format.hevc, hardwareAcceleratedExports(), options),
   '-c:a', 'libopus',
-  '-preset', 'medium',
   '-tag:v', 'hvc1', // Metadata for macOS
   {
     args: ['-an'],
@@ -236,7 +247,6 @@ const convertToHevc = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const convertToApng = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Converting', progress, estimate);
@@ -264,7 +274,6 @@ const convertToApng = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 export const crop = (options: ConvertOptions) => convert(options.outputPath, {
   onProgress: (progress, estimate) => {
     options.onProgress('Cropping', progress, estimate);
@@ -279,7 +288,7 @@ export const crop = (options: ConvertOptions) => convert(options.outputPath, {
   options.outputPath
 ));
 
-export default new Map([
+const converters = new Map([
   [Format.gif, convertToGif],
   [Format.mp4, convertToMp4],
   [Format.hevc, convertToHevc],
@@ -287,3 +296,5 @@ export default new Map([
   [Format.apng, convertToApng],
   [Format.av1, convertToAv1]
 ]);
+
+export default converters;

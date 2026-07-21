@@ -1,18 +1,19 @@
 import path from 'path';
-import {clipboard, shell, app} from 'electron';
-import ensureError from 'ensure-error';
-import cleanStack from 'clean-stack';
-import isOnline from 'is-online';
-import {openNewGitHubIssue} from 'electron-util';
+import {inspect} from 'util';
+import os from 'os';
+import {clipboard, shell, app, net} from 'electron';
 import got from 'got';
-import delay from 'delay';
+import {setTimeout as delay} from 'timers/promises';
 import macosRelease from './macos-release';
 
 import {windowManager} from '../windows/manager';
 import Sentry, {isSentryEnabled} from './sentry';
 import {InstalledPlugin} from '../plugins/plugin';
+import {openGitHubIssue} from './github-issue';
 
 const MAX_RETRIES = 10;
+
+const ensureError = (value: unknown) => value instanceof Error ? value : new Error(inspect(value));
 
 const ERRORS_TO_IGNORE = [
   /net::ERR_CONNECTION_TIMED_OUT/,
@@ -46,7 +47,7 @@ const getSentryIssue = async (eventId: string, tries = 0): Promise<SentryIssue |
     // It will then filter through GitHub issues to try and find an issue matching that issue ID.
     // It will return the issue information if it finds it or a partial template to use to create one if not.
     // https://github.com/wulkano/kap-sentry-tracker
-    const {body} = await got.get(`https://kap-sentry-tracker.vercel.app/api/event/${eventId}`, {json: true});
+    const body = await got.get(`https://kap-sentry-tracker.vercel.app/api/event/${eventId}`).json<SentryIssue & {pending?: boolean}>();
 
     if (body.pending) {
       await delay(2000);
@@ -62,7 +63,12 @@ const getSentryIssue = async (eventId: string, tries = 0): Promise<SentryIssue |
 
 const getPrettyStack = (error: Error) => {
   const pluginsPath = path.join(app.getPath('userData'), 'plugins', 'node_modules');
-  return cleanStack(error.stack ?? '', {pretty: true, basePath: pluginsPath});
+  return (error.stack ?? '')
+    .replaceAll('\\', '/')
+    .split('\n')
+    .filter(line => !line.includes('node:internal/') && !line.includes('/electron.asar/'))
+    .map(line => line.replace(pluginsPath, '').replace(os.homedir(), '~'))
+    .join('\n');
 };
 
 const release = macosRelease();
@@ -119,7 +125,7 @@ export const showError = async (
     const openIssueButton = plugin.repoUrl && {
       label: 'Open Issue',
       action: () => {
-        openNewGitHubIssue({
+        openGitHubIssue({
           repoUrl: plugin.repoUrl,
           title,
           body: getIssueBody(title, detail)
@@ -139,7 +145,7 @@ export const showError = async (
   let message;
   const buttons: any[] = [...mainButtons];
 
-  if (isSentryEnabled && await isOnline()) {
+  if (isSentryEnabled && net.isOnline()) {
     const eventId = Sentry.captureException(ensuredError);
     const sentryIssuePromise = getSentryIssue(eventId);
 
@@ -173,7 +179,7 @@ export const showError = async (
               {
                 label: 'Open Issue',
                 action: () => {
-                  openNewGitHubIssue({
+                  openGitHubIssue({
                     user: 'wulkano',
                     repo: 'kap',
                     title,

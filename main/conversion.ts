@@ -4,10 +4,10 @@ import {EventEmitter} from 'events';
 import {ConversionOptions, Format} from './common/types';
 import {Video} from './video';
 import {convertTo} from './converters';
-import hash from 'object-hash';
+import {hashObject} from './utils/hash';
 import {notify} from './utils/notifications';
 import PCancelable from 'p-cancelable';
-import prettyBytes from 'pretty-bytes';
+import {formatBytes} from './utils/format';
 import TypedEventEmitter from 'typed-emitter';
 
 const plist = require('plist');
@@ -39,7 +39,7 @@ export default class Conversion extends (EventEmitter as new () => TypedEventEmi
     // eslint-disable-next-line constructor-super
     super();
 
-    this.id = hash({
+    this.id = hashObject({
       filePath: video.filePath,
       format,
       options
@@ -53,7 +53,7 @@ export default class Conversion extends (EventEmitter as new () => TypedEventEmi
   }
 
   static getOrCreate(video: Video, format: Format, options: ConversionOptions) {
-    const id = hash({
+    const id = hashObject({
       filePath: video.filePath,
       format,
       options
@@ -122,7 +122,7 @@ export default class Conversion extends (EventEmitter as new () => TypedEventEmi
 
     try {
       const {size} = await fs.promises.stat(filePath);
-      this.finalSize = prettyBytes(size);
+      this.finalSize = formatBytes(size);
       this.emit('file-size', this.finalSize);
     } catch {}
   };
@@ -144,10 +144,10 @@ export default class Conversion extends (EventEmitter as new () => TypedEventEmi
   };
 }
 
-interface ConversionEvents {
+type ConversionEvents = {
   progress: (text: string, percentage: number) => void;
   error: (error: Error) => void;
   cancel: () => void;
   completed: () => void;
   'file-size': (size: string) => void;
-}
+};

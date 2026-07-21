@@ -2,17 +2,13 @@ import {app} from 'electron';
 import {EventEmitter} from 'events';
 import path from 'path';
 import fs from 'fs';
-import makeDir from 'make-dir';
 import execa from 'execa';
+import got from 'got';
 import {track} from '../common/analytics';
-import {InstalledPlugin, NpmPlugin} from './plugin';
+import {InstalledPlugin, NpmPlugin, PluginPackageJson} from './plugin';
 import {showError} from '../utils/errors';
 import {notify} from '../utils/notifications';
-import packageJson from 'package-json';
-import {NormalizedPackageJson} from 'read-pkg';
 import {windowManager} from '../windows/manager';
-
-const got = require('got');
 
 type PackageJson = {
   dependencies: Record<string, string>;
@@ -134,17 +130,15 @@ export class Plugins extends EventEmitter {
 
   async getFromNpm() {
     const url = 'https://api.npms.io/v2/search?q=keywords:kap-plugin+not:deprecated';
-    const response = (await got(url, {json: true})) as {
-      body: {results: Array<{package: NormalizedPackageJson}>};
-    };
+    const response = await got(url).json<{results: Array<{package: PluginPackageJson}>}>();
     const installed = this.pluginNames;
 
-    return Promise.all(response.body.results
+    return Promise.all(response.results
       .map(x => x.package)
       .filter(x => x.name.startsWith('kap-'))
       .filter(x => !installed.includes(x.name)) // Filter out installed plugins
       .map(async x => {
-        const {kap, kapVersion} = await packageJson(x.name, {fullMetadata: true}) as any;
+        const {kap, kapVersion} = await got(`https://registry.npmjs.org/${encodeURIComponent(x.name)}/latest`).json<PluginPackageJson>();
         return new NpmPlugin(x, {
           // Keeping for backwards compatibility
           version: kapVersion,
@@ -178,7 +172,7 @@ export class Plugins extends EventEmitter {
 
   private makePluginsDir() {
     if (!fs.existsSync(this.packageJsonPath)) {
-      makeDir.sync(this.pluginsDir);
+      fs.mkdirSync(this.pluginsDir, {recursive: true});
       fs.writeFileSync(this.packageJsonPath, JSON.stringify({dependencies: {}}, null, 2));
     }
   }

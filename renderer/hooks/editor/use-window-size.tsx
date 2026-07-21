@@ -1,4 +1,3 @@
-import {remote} from 'electron';
 import {useEffect, useRef} from 'react';
 import {resizeKeepingCenter} from 'utils/window';
 
@@ -19,8 +18,7 @@ export const useEditorWindowSizeEffect = (isConversionWindowState: boolean) => {
       return;
     }
 
-    const window = remote.getCurrentWindow();
-    const bounds = window.getBounds();
+    const bounds = window.kap.window.getState().bounds;
 
     if (isConversionWindowState) {
       previousWindowSizeRef.current = {
@@ -28,13 +26,11 @@ export const useEditorWindowSizeEffect = (isConversionWindowState: boolean) => {
         height: bounds.height
       };
 
-      window.setBounds(resizeKeepingCenter(bounds, {width: CONVERSION_WIDTH, height: CONVERSION_HEIGHT}), true);
-      window.resizable = false;
-      window.fullScreenable = false;
+      window.kap.window.setBounds(resizeKeepingCenter(bounds, {width: CONVERSION_WIDTH, height: CONVERSION_HEIGHT}), true);
+      window.kap.window.setResizable(false, false);
     } else {
-      window.resizable = true;
-      window.fullScreenable = true;
-      window.setBounds(resizeKeepingCenter(bounds, previousWindowSizeRef.current), true);
+      window.kap.window.setResizable(true, true);
+      window.kap.window.setBounds(resizeKeepingCenter(bounds, previousWindowSizeRef.current), true);
     }
   }, [isConversionWindowState]);
 };

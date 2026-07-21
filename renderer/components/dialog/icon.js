@@ -3,7 +3,7 @@ import React from 'react';
 const Icon = () => {
   return (
     <div>
-      <img src="/static/kap-icon.png"/>
+      <img src="./static/kap-icon.png"/>
       <style jsx>{`
         img {
           width: 58px;

@@ -1,4 +1,3 @@
-import Head from 'next/head';
 // Import EditorPreview from '../components/editor/editor-preview';
 import combineUnstatedContainers from '../utils/combine-unstated-containers';
 import VideoMetadataContainer from '../components/editor/video-metadata-container';
@@ -25,9 +24,6 @@ const EditorPage = () => {
 
   return (
     <div className="cover-window">
-      <Head>
-        <meta httpEquiv="Content-Security-Policy" content="media-src file:;"/>
-      </Head>
       <ConversionIdContextProvider>
         <ContainerProvider>
           <Editor/>
@@ -70,18 +66,6 @@ const EditorPage = () => {
           background-color: #222222;
         }
 
-        .tooltip {
-          padding: 0 !important;
-          max-width: 300px;
-        }
-
-        .tooltip-content {
-          padding: 8px 21px;
-        }
-
-        .hide-tooltip .tooltip {
-          display: none;
-        }
       `}</style>
     </div>
   );

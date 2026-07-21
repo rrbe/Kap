@@ -1,0 +1,33 @@
+diff --git a/Sources/Aperture/Aperture.swift b/Sources/Aperture/Aperture.swift
+index b630bb8..58ee69c 100644
+--- a/Sources/Aperture/Aperture.swift
++++ b/Sources/Aperture/Aperture.swift
+@@ -319,7 +319,7 @@ extension Aperture {
+ 
+ 			let streamConfig = SCStreamConfiguration()
+ 
+-			streamConfig.queueDepth = 6
++			streamConfig.queueDepth = 8
+ 
+ 			switch options.videoCodec {
+ 			case .h264:
+@@ -469,7 +469,7 @@ extension Aperture {
+ 				throw error
+ 			}
+ 
+-			try? await cleanUp()
++			try await cleanUp()
+ 		}
+ 
+ 		private func recordError(error: Error) {
+@@ -511,6 +511,10 @@ extension Aperture {
+ 
+ 				await assetWriter.finishWriting()
+ 			}
++
++			if let assetWriter, assetWriter.status == .failed {
++				throw Error.couldNotStartStream(assetWriter.error)
++			}
+ 		}
+ 
+ 		func pause() {

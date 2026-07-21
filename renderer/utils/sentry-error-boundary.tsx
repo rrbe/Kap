@@ -1,33 +1,23 @@
 import React from 'react';
-import * as Sentry from '@sentry/browser';
-import electron from 'electron';
-import type {api as Api, is as Is} from 'electron-util';
-
-const SENTRY_PUBLIC_DSN = 'https://2dffdbd619f34418817f4db3309299ce@sentry.io/255536';
+import * as Sentry from '@sentry/electron/renderer';
+import {settings} from './settings';
 
 class SentryErrorBoundary extends React.Component<{children: React.ReactNode}> {
   constructor(props) {
     super(props);
-    const {settings} = electron.remote.require('./common/settings');
-    // Done in-line because this is used in _app
-    const {is, api} = require('electron-util') as {
-      api: typeof Api;
-      is: typeof Is;
-    };
+    const app = window.kap.app.getInfo();
 
-    if (!is.development && settings.get('allowAnalytics')) {
-      const release = `${api.app.name}@${api.app.getVersion()}`.toLowerCase();
-      Sentry.init({dsn: SENTRY_PUBLIC_DSN, release});
+    if (!app.development && settings.get('allowAnalytics')) {
+      Sentry.init();
     }
   }
 
   componentDidCatch(error, errorInfo) {
     console.log(error, errorInfo);
-    Sentry.configureScope(scope => {
-      for (const [key, value] of Object.entries(errorInfo)) {
-        scope.setExtra(key, value);
-      }
-    });
+    const scope = Sentry.getCurrentScope();
+    for (const [key, value] of Object.entries(errorInfo)) {
+      scope.setExtra(key, value);
+    }
 
     Sentry.captureException(error);
 

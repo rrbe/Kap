@@ -5,7 +5,6 @@ import {shell, clipboard} from 'electron';
 import fs from 'fs';
 import Store from 'electron-store';
 import execa from 'execa';
-import tempy from 'tempy';
 import {SetOptional} from 'type-fest';
 
 import {windowManager} from './windows/manager';
@@ -16,6 +15,7 @@ import {ApertureOptions} from './common/types';
 import Sentry, {isSentryEnabled} from './utils/sentry';
 
 import ffmpegPath from './utils/ffmpeg-path';
+import {temporaryFile} from './utils/temporary-path';
 
 export interface PastRecording {
   filePath: string;
@@ -192,7 +192,7 @@ const knownErrors = [{
   test: (error: string) => error.includes('moov atom not found'),
   fix: async (filePath: string): Promise<string | void> => {
     try {
-      const outputPath = tempy.file({extension: 'mp4'});
+      const outputPath = temporaryFile({extension: 'mp4'});
 
       await execa(ffmpegPath, [
         '-i',

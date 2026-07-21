@@ -1,5 +1,5 @@
 import {globalShortcut} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from './utils/ipc';
 import {settings} from './common/settings';
 import {windowManager} from './windows/manager';
 

@@ -1,6 +1,5 @@
 'use strict';
 
-import util from 'electron-util';
 import {parse} from 'semver';
 import {settings} from './settings';
 
@@ -23,10 +22,6 @@ export const track = (...paths: string[]) => {
 };
 
 export const initializeAnalytics = () => {
-  if (util.isFirstAppLaunch()) {
-    /// insight.track('install');
-  }
-
   if (settings.get('version') !== pkg.version) {
     track('install');
     settings.set('version', pkg.version);

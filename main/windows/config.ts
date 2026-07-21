@@ -1,11 +1,12 @@
 'use strict';
 
 import {BrowserWindow} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
-import pEvent from 'p-event';
+import {once} from 'events';
+import {ipcMain as ipc} from '../utils/ipc';
 
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 const openConfigWindow = async (pluginName: string) => {
   const prefsWindow = await windowManager.preferences?.open();
@@ -21,21 +22,14 @@ const openConfigWindow = async (pluginName: string) => {
     show: false,
     parent: prefsWindow,
     modal: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
-  loadRoute(configWindow, 'config');
+  await loadRoute(configWindow, 'config');
+  await ipc.callRenderer(configWindow, 'plugin', pluginName);
+  configWindow.show();
 
-  configWindow.webContents.on('did-finish-load', async () => {
-    await ipc.callRenderer(configWindow, 'plugin', pluginName);
-    configWindow.show();
-  });
-
-  await pEvent(configWindow, 'closed');
+  await once(configWindow, 'closed');
 };
 
 const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, editorWindow: BrowserWindow) => {
@@ -51,21 +45,14 @@ const openEditorConfigWindow = async (pluginName: string, serviceTitle: string, 
     show: false,
     parent: editorWindow,
     modal: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
-  loadRoute(configWindow, 'config');
+  await loadRoute(configWindow, 'config');
+  await ipc.callRenderer(configWindow, 'edit-service', {pluginName, serviceTitle});
+  configWindow.show();
 
-  configWindow.webContents.on('did-finish-load', async () => {
-    await ipc.callRenderer(configWindow, 'edit-service', {pluginName, serviceTitle});
-    configWindow.show();
-  });
-
-  await pEvent(configWindow, 'closed');
+  await once(configWindow, 'closed');
 };
 
 ipc.answerRenderer('open-edit-config', async ({pluginName, serviceTitle}, window) => {

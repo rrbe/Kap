@@ -1,7 +1,7 @@
-import delay from 'delay';
+import {setTimeout as delay} from 'timers/promises';
 import {app, dialog} from 'electron';
-import {openNewGitHubIssue} from 'electron-util';
 import macosRelease from '../utils/macos-release';
+import {openGitHubIssue} from '../utils/github-issue';
 import {supportedVideoExtensions} from '../common/constants';
 import {getCurrentMenuItem, MenuItemId} from './utils';
 import {openFiles} from '../utils/open-files';
@@ -56,7 +56,7 @@ export const getSendFeedbackMenuItem = () => ({
   id: MenuItemId.sendFeedback,
   label: 'Send Feedback…',
   click() {
-    openNewGitHubIssue({
+    openGitHubIssue({
       user: 'wulkano',
       repo: 'kap',
       body: issueBody
@@ -91,4 +91,3 @@ Workaround:           A workaround for the issue if you've found on. (this will 
 
 <!-- If you have additional information, enter it below. -->
 `;
-

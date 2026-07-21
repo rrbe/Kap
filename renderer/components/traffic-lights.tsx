@@ -1,4 +1,3 @@
-import {remote} from 'electron';
 import {useState, useEffect, FunctionComponent} from 'react';
 
 interface TrafficLightsProps {
@@ -6,42 +5,34 @@ interface TrafficLightsProps {
 }
 
 const TrafficLights: FunctionComponent<TrafficLightsProps> = props => {
-  const currentWindow = remote.getCurrentWindow();
-  const [tint, setTint] = useState('blue');
+  const windowState = window.kap.window.getState();
+  const [tint, setTint] = useState(window.kap.appearance.get().tint);
 
   useEffect(() => {
-    const setTintColor = () => {
-      setTint(remote.systemPreferences.getUserDefault('AppleAquaColorVariant', 'string') === '6' ? 'graphite' : 'blue');
-    };
-
-    const tintSubscription = remote.systemPreferences.subscribeNotification('AppleAquaColorVariantChanged', setTintColor);
-    setTintColor();
-
-    return () => {
-      remote.systemPreferences.unsubscribeNotification(tintSubscription);
-    };
+    const listenerId = window.kap.appearance.onChanged(() => setTint(window.kap.appearance.get().tint));
+    return () => window.kap.appearance.removeListener(listenerId);
   }, []);
 
   const enabled = {
-    close: currentWindow.closable,
-    minimize: currentWindow.minimizable,
-    maximize: currentWindow.maximizable
+    close: windowState.closable,
+    minimize: windowState.minimizable,
+    maximize: windowState.maximizable
   };
 
   const getClassName = (name: string) => `traffic-light ${name}${enabled[name] ? '' : ' disabled'}`;
 
   const close = async () => {
     if (!props.shouldClose || await props.shouldClose()) {
-      currentWindow.close();
+      window.kap.window.close();
     }
   };
 
   const minimize = () => {
-    currentWindow.minimize();
+    window.kap.window.minimize();
   };
 
   const maximize = () => {
-    currentWindow.setFullScreen(!currentWindow.isFullScreen());
+    window.kap.window.toggleFullScreen();
   };
 
   return (

@@ -24,6 +24,7 @@ interface Settings {
   loopExports: boolean;
   recordKeyboardShortcut: boolean;
   recordAudio: boolean;
+  recordSystemAudio: boolean;
   audioInputDeviceId?: string;
   cropperShortcut: {
     metaKey: boolean;
@@ -32,6 +33,7 @@ interface Settings {
     shiftKey: boolean;
     character: string;
   };
+  hardwareAcceleratedExports: boolean;
   lossyCompression: boolean;
   enableShortcuts: boolean;
   shortcuts: {
@@ -74,6 +76,10 @@ export const settings = new Store<Settings>({
       type: 'boolean',
       default: false
     },
+    recordSystemAudio: {
+      type: 'boolean',
+      default: false
+    },
     audioInputDeviceId: {
       type: [
         'string',
@@ -105,6 +111,10 @@ export const settings = new Store<Settings>({
           default: '5'
         }
       }
+    },
+    hardwareAcceleratedExports: {
+      type: 'boolean',
+      default: true
     },
     lossyCompression: {
       type: 'boolean',

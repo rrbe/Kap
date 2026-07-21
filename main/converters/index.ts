@@ -1,16 +1,35 @@
 import path from 'path';
-import tempy from 'tempy';
 import {Encoding, Format} from '../common/types';
 import {track} from '../common/analytics';
 import h264Converters, {crop as h264Crop} from './h264';
 import {ConvertOptions} from './utils';
 import {getFormatExtension} from '../common/constants';
 import PCancelable, {OnCancelFunction} from 'p-cancelable';
+import {temporaryDirectory, temporaryFile} from '../utils/temporary-path';
 import {convert} from './process';
 import {plugins} from '../plugins';
 import {EditServiceContext} from '../plugins/service-context';
 import {settings} from '../common/settings';
 import {Except} from 'type-fest';
+import fs from 'fs';
+
+export const copyUneditedMp4 = PCancelable.fn(async (options: ConvertOptions, onCancel: OnCancelFunction) => {
+  let isCanceled = false;
+  onCancel(() => {
+    isCanceled = true;
+  });
+
+  options.onProgress('Copying', 0);
+  await fs.promises.copyFile(options.inputPath, options.outputPath, fs.constants.COPYFILE_FICLONE);
+
+  if (isCanceled) {
+    await fs.promises.unlink(options.outputPath).catch(() => undefined);
+  } else {
+    options.onProgress('Copying', 1);
+  }
+
+  return options.outputPath;
+});
 
 const converters = new Map([
   [Encoding.h264, h264Converters]
@@ -20,7 +39,6 @@ const croppingHandlers = new Map([
   [Encoding.h264, h264Crop]
 ]);
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 export const convertTo = (
   format: Format,
   options: Except<ConvertOptions, 'outputPath'> & {defaultFileName: string},
@@ -40,9 +58,13 @@ export const convertTo = (
   track(`file/export/format/${format}`);
 
   const conversionOptions = {
-    outputPath: path.join(tempy.directory(), `${options.defaultFileName}.${getFormatExtension(format)}`),
+    outputPath: path.join(temporaryDirectory(), `${options.defaultFileName}.${getFormatExtension(format)}`),
     ...options
   };
+
+  if (format === Format.mp4 && encoding === Encoding.h264 && options.isUnedited && !options.shouldMute && !options.editService) {
+    return copyUneditedMp4(conversionOptions);
+  }
 
   if (options.editService) {
     const croppingHandler = croppingHandlers.get(encoding);
@@ -70,7 +92,7 @@ const convertWithEditPlugin = PCancelable.fn(
     let isCanceled = false;
 
     if (options.shouldCrop) {
-      croppedPath = tempy.file({extension: path.extname(options.inputPath)});
+      croppedPath = temporaryFile({extension: path.extname(options.inputPath)});
 
       options.onProgress('Cropping', 0);
 
@@ -93,7 +115,6 @@ const convertWithEditPlugin = PCancelable.fn(
       croppedPath = options.inputPath;
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     const convertFunction = (args: string[], text = 'Converting') => new PCancelable<void>(async (resolve, reject, onCancel) => {
       try {
         const process = convert(
@@ -117,7 +138,7 @@ const convertWithEditPlugin = PCancelable.fn(
       }
     });
 
-    const editPath = tempy.file({extension: path.extname(croppedPath)});
+    const editPath = temporaryFile({extension: path.extname(croppedPath)});
 
     const editPlugin = plugins.editPlugins.find(plugin => {
       return plugin.name === options.editService?.pluginName;

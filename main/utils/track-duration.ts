@@ -1,4 +1,4 @@
-// TODO: Add interface to aperture-node for getting recording duration instead of using this https://github.com/wulkano/aperture-node/issues/29
+// TODO: Read recording duration from the native capture helper instead of tracking wall time here.
 let overallDuration = 0;
 let currentDurationStart = 0;
 

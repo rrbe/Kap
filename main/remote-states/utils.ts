@@ -9,7 +9,6 @@ export const getChannelNames = (name: string) => ({
   stateUpdated: getChannelName(name, 'state-updated')
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type RemoteState<State, Actions extends Record<string, Function>> = (sendUpdate: (state?: State, id?: string) => void) => Promisable<{
   getState: (id?: string) => Promisable<State>;
   actions: Actions;

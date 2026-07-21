@@ -1,4 +1,3 @@
-import electron from 'electron';
 import PropTypes from 'prop-types';
 import React from 'react';
 import css from 'styled-jsx/css';
@@ -24,27 +23,25 @@ const mainStyle = css`
 
 const MainControls = {};
 
-const remote = electron.remote || false;
-let menu;
-
-const buildMenu = async ({selectedApp}) => {
-  const {buildWindowsMenu} = remote.require('./utils/windows');
-  menu = await buildWindowsMenu(selectedApp);
-};
-
 class Left extends React.Component {
-  state = {};
-
-  static getDerivedStateFromProps(nextProps, previousState) {
-    const {selectedApp} = nextProps;
-
-    if (selectedApp !== previousState.selectedApp) {
-      buildMenu({selectedApp});
-      return {selectedApp};
-    }
-
-    return null;
+  componentDidMount() {
+    this.prepareMenu();
   }
+
+  componentDidUpdate(previousProps) {
+    if (this.props.selectedApp !== previousProps.selectedApp) {
+      this.prepareMenu();
+    }
+  }
+
+  prepareMenu = () => {
+    this.menuPromise = window.kap.menu.prepareWindows(this.props.selectedApp || '');
+  };
+
+  openMenu = async options => {
+    await this.menuPromise;
+    return window.kap.menu.popupWindows(options);
+  };
 
   render() {
     const {toggleAdvanced, selectedApp, advanced} = this.props;
@@ -54,7 +51,7 @@ class Left extends React.Component {
         <div className="crop">
           <CropIcon tabIndex={advanced ? -1 : 0} onClick={toggleAdvanced}/>
         </div>
-        <IconMenu isMenu icon={ApplicationsIcon} tabIndex={advanced ? -1 : 0} active={Boolean(selectedApp)} onOpen={menu && menu.popup}/>
+        <IconMenu isMenu icon={ApplicationsIcon} tabIndex={advanced ? -1 : 0} active={Boolean(selectedApp)} onOpen={this.openMenu}/>
         <style jsx>{mainStyle}</style>
         <style jsx>{`
           .crop {
@@ -85,10 +82,7 @@ MainControls.Left = connect(
 )(Left);
 
 class Right extends React.Component {
-  onCogMenuClick = async () => {
-    const cogMenu = await electron.remote.require('./menus/cog').getCogMenu();
-    cogMenu.popup();
-  };
+  onCogMenuClick = options => window.kap.menu.popupCog(options);
 
   render() {
     const {enterFullscreen, exitFullscreen, isFullscreen, advanced} = this.props;

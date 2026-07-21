@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Linkify from 'react-linkify';
+import {linkifyText} from '../../utils/linkify-text';
 
 import Item, {Link} from '../preferences/item';
 import Select from '../preferences/item/select';
@@ -122,7 +122,7 @@ class Tab extends React.Component {
         {
           description && (
             <div className="description">
-              <Linkify component={Link}>{description}</Linkify>
+              {linkifyText(description, Link)}
             </div>
           )
         }
@@ -131,7 +131,7 @@ class Tab extends React.Component {
             const schema = config[key];
             const type = schema.customType || (schema.enum ? 'select' : schema.type);
             const itemErrors = allErrors
-              .filter(({dataPath}) => dataPath.endsWith(key))
+              .filter(({dataPath, instancePath}) => (instancePath || dataPath || '').endsWith(key))
               .map(({message}) => `This ${message}`);
 
             return (

@@ -1,8 +1,8 @@
 import electron, {app, BrowserWindow, Menu} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
-import pEvent from 'p-event';
+import {ipcMain as ipc} from '../utils/ipc';
 import {customApplicationMenu, defaultApplicationMenu, MenuModifier} from '../menus/application';
 import {loadRoute} from '../utils/routes';
+import {secureWebPreferences} from './web-preferences';
 
 interface KapWindowOptions<State> extends Electron.BrowserWindowConstructorOptions {
   route: string;
@@ -50,10 +50,8 @@ export default class KapWindow<State = any> {
     this.browserWindow = new BrowserWindow({
       ...rest,
       webPreferences: {
-        nodeIntegration: true,
-        enableRemoteModule: true,
-        contextIsolation: false,
-        ...rest.webPreferences
+        ...rest.webPreferences,
+        ...secureWebPreferences
       },
       show: false
     });
@@ -125,8 +123,8 @@ export default class KapWindow<State = any> {
     KapWindow.windows.set(this.id, this);
 
     this.browserWindow.on('show', () => {
-      if (this.options.dock && !app.dock.isVisible) {
-        app.dock.show();
+      if (this.options.dock && !app.dock?.isVisible()) {
+        app.dock?.show();
       }
     });
 
@@ -138,18 +136,11 @@ export default class KapWindow<State = any> {
       Menu.setApplicationMenu(this.menu);
     });
 
-    this.webContents.on('did-finish-load', async () => {
-      if (this.state) {
-        this.callRenderer('kap-window-state', this.state);
-      }
-    });
-
     this.answerRenderer('kap-window-state', () => this.state);
 
-    loadRoute(this.browserWindow, this.props.route);
-
+    let mounted: Promise<void> | undefined;
     if (waitForMount) {
-      return new Promise<void>(resolve => {
+      mounted = new Promise<void>(resolve => {
         this.answerRenderer('kap-window-mount', () => {
           if (!this.browserWindow.isVisible()) {
             this.browserWindow.show();
@@ -160,7 +151,12 @@ export default class KapWindow<State = any> {
       });
     }
 
-    await pEvent(this.webContents, 'did-finish-load');
+    await loadRoute(this.browserWindow, this.props.route);
+
+    if (mounted) {
+      return mounted;
+    }
+
     this.browserWindow.show();
   }
 

@@ -11,10 +11,8 @@ export const useConfirmation = (
   callback: () => void,
   options: UseConfirmationOptions
 ) => {
-  return useCallback(() => {
-    const {dialog, remote} = require('electron-util').api;
-
-    const buttonIndex = dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+  return useCallback(async () => {
+    const {response} = await window.kap.dialog.showMessage({
       type: 'question',
       buttons: [
         options.confirmButtonText,
@@ -26,7 +24,7 @@ export const useConfirmation = (
       detail: options.detail
     });
 
-    if (buttonIndex === 0) {
+    if (response === 0) {
       callback();
     }
   }, [callback]);

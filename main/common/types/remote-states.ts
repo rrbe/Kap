@@ -1,7 +1,6 @@
 import {App, Format} from './base';
 import {ExportStatus} from './conversion-options';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type RemoteState<State = any, Actions extends Record<string, (...args: any[]) => any> = {}> = {
   actions: Actions;
   state: State;

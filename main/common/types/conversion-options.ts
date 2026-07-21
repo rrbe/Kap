@@ -26,6 +26,7 @@ export type ConversionOptions = {
   fps: number;
   shouldCrop: boolean;
   shouldMute: boolean;
+  isUnedited?: boolean;
   editService?: EditServiceInfo;
 };
 

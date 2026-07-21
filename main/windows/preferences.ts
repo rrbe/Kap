@@ -1,11 +1,11 @@
 import {BrowserWindow} from 'electron';
 import {promisify} from 'util';
-import pEvent from 'p-event';
 
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import {loadRoute} from '../utils/routes';
 import {track} from '../common/analytics';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 let prefsWindow: BrowserWindow | undefined;
 
@@ -37,11 +37,7 @@ const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
     frame: false,
     transparent: true,
     vibrancy: 'window',
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
 
   const titlebarHeight = 85;
@@ -51,9 +47,7 @@ const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
     prefsWindow = undefined;
   });
 
-  loadRoute(prefsWindow, 'preferences');
-
-  await pEvent(prefsWindow.webContents, 'did-finish-load');
+  await loadRoute(prefsWindow, 'preferences');
 
   if (options) {
     ipc.callRenderer(prefsWindow, 'options', options);
@@ -73,8 +67,6 @@ const closePrefsWindow = () => {
     prefsWindow.close();
   }
 };
-
-ipc.answerRenderer('open-preferences', openPrefsWindow);
 
 windowManager.setPreferences({
   open: openPrefsWindow,

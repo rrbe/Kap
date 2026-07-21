@@ -1,28 +1,13 @@
-import util from 'electron-util';
 import execa from 'execa';
 import moment from 'moment';
 import PCancelable from 'p-cancelable';
-import tempy from 'tempy';
+import {temporaryFile} from '../utils/temporary-path';
 import path from 'path';
 
 import {track} from '../common/analytics';
-import {conditionalArgs, extractProgressFromStderr} from './utils';
-import {settings} from '../common/settings';
+import {extractProgressFromStderr} from './utils';
 
 import ffmpegPath from '../utils/ffmpeg-path';
-
-const gifsicle = require('gifsicle');
-const gifsiclePath = util.fixPathForAsarUnpack(gifsicle);
-
-enum Mode {
-  convert,
-  compress
-}
-
-const modes = new Map([
-  [Mode.convert, ffmpegPath],
-  [Mode.compress, gifsiclePath]
-]);
 
 export interface ProcessOptions {
   shouldTrack?: boolean;
@@ -35,10 +20,7 @@ const defaultProcessOptions = {
   shouldTrack: true
 };
 
-const createProcess = (mode: Mode) => {
-  const program = modes.get(mode)!;
-
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+const createProcess = () => {
   return (outputPath: string, options: ProcessOptions, args: string[]) => {
     const {
       shouldTrack,
@@ -50,15 +32,14 @@ const createProcess = (mode: Mode) => {
       ...options
     };
 
-    const modeName = Mode[mode];
     const trackConversionEvent = (eventName: string) => {
       if (shouldTrack) {
-        track(`file/export/${modeName}/${eventName}`);
+        track(`file/export/convert/${eventName}`);
       }
     };
 
     return new PCancelable<string>((resolve, reject, onCancel) => {
-      const runner = execa(program, args);
+      const runner = execa(ffmpegPath, args);
       const conversionStartTime = Date.now();
 
       onCancel(() => {
@@ -92,7 +73,7 @@ const createProcess = (mode: Mode) => {
           trackConversionEvent('completed');
           resolve(outputPath);
         } else {
-          failWithError(new Error(`${program} exited with code: ${code ?? 0}\n\n${stderr}`));
+          failWithError(new Error(`${ffmpegPath} exited with code: ${code ?? 0}\n\n${stderr}`));
         }
       });
 
@@ -101,22 +82,10 @@ const createProcess = (mode: Mode) => {
   };
 };
 
-export const convert = createProcess(Mode.convert);
-const compressFunction = createProcess(Mode.compress);
-
-// eslint-disable-next-line @typescript-eslint/promise-function-async
-export const compress = (outputPath: string, options: ProcessOptions, args: string[]) => {
-  const useLossy = settings.get('lossyCompression', false);
-
-  return compressFunction(
-    outputPath,
-    options,
-    conditionalArgs(args, {args: ['--lossy=50'], if: useLossy})
-  );
-};
+export const convert = createProcess();
 
 export const mute = PCancelable.fn(async (inputPath: string, onCancel: PCancelable.OnCancelFunction) => {
-  const mutedPath = tempy.file({extension: path.extname(inputPath)});
+  const mutedPath = temporaryFile({extension: path.extname(inputPath)});
 
   const converter = convert(mutedPath, {shouldTrack: false}, [
     '-i',

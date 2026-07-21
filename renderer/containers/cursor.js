@@ -1,4 +1,4 @@
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
 
 export default class CursorContainer extends Container {
   state = {
@@ -20,5 +20,9 @@ export default class CursorContainer extends Container {
   removeCursorObserver = observer => {
     const {observers} = this.state;
     this.setState({observers: observers.filter(o => o !== observer)});
+  };
+
+  reset = () => {
+    this.setState({observers: []});
   };
 }

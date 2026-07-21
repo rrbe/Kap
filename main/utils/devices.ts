@@ -1,19 +1,22 @@
 import {hasMicrophoneAccess} from '../common/system-permissions';
-import * as audioDevices from 'macos-audio-devices';
 import {settings} from '../common/settings';
 import {defaultInputDeviceId} from '../common/constants';
-import Sentry from './sentry';
-const aperture = require('aperture');
+import {getDefaultInputAudioDevice, getInputAudioDevices} from './system-helper';
 
 const {showError} = require('./errors');
 
-export const getAudioDevices = async () => {
+type AudioDevice = {id: string; name: string};
+
+let cachedAudioDevices: AudioDevice[] | undefined;
+let pendingAudioDevices: Promise<AudioDevice[]> | undefined;
+
+const loadAudioDevices = async (): Promise<AudioDevice[]> => {
   if (!hasMicrophoneAccess()) {
     return [];
   }
 
   try {
-    const devices = await audioDevices.getInputDevices();
+    const devices = await getInputAudioDevices();
 
     return devices.sort((a, b) => {
       if (a.transportType === b.transportType) {
@@ -31,26 +34,33 @@ export const getAudioDevices = async () => {
       return 0;
     }).map(device => ({id: device.uid, name: device.name}));
   } catch (error) {
-    try {
-      const devices = await aperture.audioDevices();
-
-      if (!Array.isArray(devices)) {
-        Sentry.captureException(new Error(`devices is not an array: ${JSON.stringify(devices)}`));
-        showError(error);
-        return [];
-      }
-
-      return devices;
-    } catch (error) {
-      showError(error);
-      return [];
-    }
+    showError(error);
+    return [];
   }
+};
+
+export const getAudioDevices = async ({refresh = false}: {refresh?: boolean} = {}) => {
+  if (cachedAudioDevices && !refresh) {
+    return cachedAudioDevices;
+  }
+
+  if (!pendingAudioDevices) {
+    pendingAudioDevices = loadAudioDevices()
+      .then(devices => {
+        cachedAudioDevices = devices;
+        return devices;
+      })
+      .finally(() => {
+        pendingAudioDevices = undefined;
+      });
+  }
+
+  return pendingAudioDevices;
 };
 
 export const getDefaultInputDevice = () => {
   try {
-    const device = audioDevices.getDefaultInputDevice.sync();
+    const device = getDefaultInputAudioDevice();
     return {
       id: device.uid,
       name: device.name

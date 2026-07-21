@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {ipcRenderer} from 'electron-better-ipc';
+import {ipcRenderer} from 'utils/ipc';
 import {RemoteState, RemoteStateHook} from '../common/types';
 
 // TODO: Import these util exports from the `main/remote-states/utils` file once we figure out the correct TS configuration

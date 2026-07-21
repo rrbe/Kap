@@ -1,26 +1,145 @@
-version: 2
+version: 2.1
+
+orbs:
+  macos: circleci/macos@2.5.4
+
+commands:
+  setup-arm-node:
+    steps:
+      - run:
+          name: Use Node.js 24
+          command: |
+            nvm install
+            NODE_BIN=$(dirname "$(nvm which 24.11.1)")
+            echo "export PATH=\"$NODE_BIN:\$PATH\"" >> "$BASH_ENV"
+            corepack enable
+            node --version
+            pnpm --version
+
+  install-dependencies:
+    steps:
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+
 jobs:
-  build:
+  build-arm64:
     macos:
-      xcode: '13.4.1'
+      xcode: 26.3.0
+    resource_class: m4pro.medium
     steps:
       - checkout
-      - run: yarn
+      - setup-arm-node
+      - install-dependencies
       - run: mkdir -p ~/reports
-      - run: yarn lint
-      - run: yarn test:ci
-      - run: yarn run dist
-      - run: mv dist/*-x64.dmg dist/Kap-x64.dmg
-      - run: mv dist/*-arm64.dmg dist/Kap-arm64.dmg
+      - run: pnpm lint
+      - run: pnpm test:ci
+      - run: pnpm build
+      - run:
+          name: Package arm64
+          command: pnpm exec electron-builder --mac --arm64
+      - run:
+          name: Check arm64 package architecture
+          command: pnpm check:app-architecture dist/mac-arm64/Kap.app arm64
+      - run:
+          name: Verify signed arm64 release
+          command: |
+            if [[ -n "${CIRCLE_TAG:-}" ]]; then
+              codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Kap.app
+              spctl --assess --verbose --type exec dist/mac-arm64/Kap.app
+              xcrun stapler validate dist/mac-arm64/Kap.app
+            fi
+      - run:
+          name: Collect arm64 artifacts
+          command: |
+            mkdir -p workspace/arm64
+            cp dist/Kap-*-arm64.dmg* workspace/arm64/
+            cp dist/Kap-*-arm64.zip* workspace/arm64/
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - arm64
       - store_artifacts:
-          path: dist/Kap-x64.dmg
-      - store_artifacts:
-          path: dist/Kap-arm64.dmg
+          path: workspace/arm64
       - store_test_results:
           path: ~/reports
+
+  build-x64:
+    macos:
+      xcode: 26.3.0
+    resource_class: m4pro.medium
+    steps:
+      - checkout
+      - macos/install-rosetta
+      - run:
+          name: Build universal Swift helpers natively
+          command: |
+            nvm install
+            node scripts/build-capture-helper.mjs
+      - run:
+          name: Use x64 Node.js 24
+          command: |
+            mkdir -p "$HOME/node-x64"
+            curl -fsSL https://nodejs.org/dist/v24.11.1/node-v24.11.1-darwin-x64.tar.gz | tar -xz -C "$HOME/node-x64" --strip-components=1
+            "$HOME/node-x64/bin/corepack" enable --install-directory "$HOME/node-x64/bin"
+            echo 'export PATH="$HOME/node-x64/bin:$PATH"' >> "$BASH_ENV"
+            echo 'export npm_config_arch=x64' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            node -p "process.version + ' ' + process.arch"
+            pnpm --version
+      - install-dependencies
+      - run: mkdir -p ~/reports
+      - run: pnpm test:ci
+      - run:
+          name: Build x64 JavaScript
+          command: |
+            node node_modules/typescript/bin/tsc
+            node node_modules/vite/bin/vite.js build --config renderer/vite.config.ts
+      - run:
+          name: Package x64
+          command: node node_modules/electron-builder/out/cli/cli.js --mac --x64
+      - run:
+          name: Check x64 package architecture
+          command: pnpm check:app-architecture dist/mac/Kap.app x64
+      - run:
+          name: Verify signed x64 release
+          command: |
+            if [[ -n "${CIRCLE_TAG:-}" ]]; then
+              codesign --verify --deep --strict --verbose=2 dist/mac/Kap.app
+              spctl --assess --verbose --type exec dist/mac/Kap.app
+              xcrun stapler validate dist/mac/Kap.app
+            fi
+      - run:
+          name: Collect x64 artifacts
+          command: |
+            mkdir -p workspace/x64
+            cp dist/Kap-*-x64.dmg* workspace/x64/
+            cp dist/Kap-*-x64.zip* workspace/x64/
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - x64
+      - store_artifacts:
+          path: workspace/x64
+      - store_test_results:
+          path: ~/reports
+
+  release-metadata:
+    docker:
+      - image: cimg/node:24.11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: workspace
+      - run:
+          name: Create multi-architecture update metadata
+          command: node scripts/create-update-metadata.mjs workspace/arm64/Kap-*-arm64.zip workspace/x64/Kap-*-x64.zip workspace/latest-mac.yml
+      - store_artifacts:
+          path: workspace/latest-mac.yml
+
   sentry-release:
     docker:
-      - image: cimg/node:lts
+      - image: cimg/node:24.11
     environment:
       SENTRY_ORG: wulkano-l0
       SENTRY_PROJECT: kap
@@ -28,22 +147,32 @@ jobs:
       - checkout
       - run: |
           curl -sL https://sentry.io/get-cli/ | bash
-          export SENTRY_RELEASE=$(yarn run -s sentry-version)
+          export SENTRY_RELEASE=$(node -p "'kap@' + require('./package.json').version")
           sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
           sentry-cli releases set-commits --auto $SENTRY_RELEASE
           sentry-cli releases finalize $SENTRY_RELEASE
 
 workflows:
-  version: 2
   build:
     jobs:
-      - build:
+      - build-arm64:
           filters:
             tags:
-              only: /.*/ # Force CircleCI to build on tags
+              only: /.*/
+      - build-x64:
+          filters:
+            tags:
+              only: /.*/
+      - release-metadata:
+          requires:
+            - build-arm64
+            - build-x64
+          filters:
+            tags:
+              only: /.*/
       - sentry-release:
           requires:
-            - build
+            - release-metadata
           filters:
             tags:
               only: /^v.*/

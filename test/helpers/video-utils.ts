@@ -11,7 +11,9 @@ const getDuration = (text: string): number => {
 const getEncoding = (text: string) => /Stream.*Video: (.*?)[, ]/.exec(text)?.[1];
 
 const getFps = (text: string) => {
-  const fpsString = /([\d.]*) fps/.exec(text)?.[1];
+  // GIF stores frame delays in centiseconds, so FFmpeg can report a peak `fps`
+  // that differs from the requested average `tbr`.
+  const fpsString = /([\d.]*) tbr/.exec(text)?.[1] ?? /([\d.]*) fps/.exec(text)?.[1];
   return Number.parseFloat(fpsString!);
 };
 

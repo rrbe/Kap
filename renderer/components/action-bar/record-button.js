@@ -1,4 +1,3 @@
-import electron from 'electron';
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
@@ -32,8 +31,6 @@ const RecordButton = ({
   y,
   width,
   height,
-  screenWidth,
-  screenHeight,
   displayId,
   willStartRecording,
   recordAudio,
@@ -53,7 +50,6 @@ const RecordButton = ({
         javascriptNode.onaudioprocess = () => {
           const array = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(array);
-          // eslint-disable-next-line unicorn/no-array-reduce
           const avg = array.reduce((p, c) => p + c) / array.length;
           if (avg >= 36) {
             setShowFirstRipple(true);
@@ -97,24 +93,17 @@ const RecordButton = ({
     event.stopPropagation();
 
     if (cropperExists) {
-      const {remote} = electron;
-      const {startRecording} = remote.require('./aperture');
-
       willStartRecording();
 
-      startRecording({
+      window.kap.recording.start({
         cropperBounds: {
           x,
           y,
           width,
           height
         },
-        screenBounds: {
-          width: screenWidth,
-          height: screenHeight
-        },
         displayId
-      });
+      }).catch(console.error);
     }
   };
 
@@ -225,8 +214,6 @@ RecordButton.propTypes = {
   y: PropTypes.number,
   width: PropTypes.number,
   height: PropTypes.number,
-  screenWidth: PropTypes.number,
-  screenHeight: PropTypes.number,
   displayId: PropTypes.number,
   willStartRecording: PropTypes.elementType,
   recordAudio: PropTypes.bool,
@@ -235,6 +222,6 @@ RecordButton.propTypes = {
 
 export default connect(
   [CropperContainer],
-  ({x, y, width, height, screenWidth, screenHeight, displayId, recordAudio, audioInputDeviceId}) => ({x, y, width, height, screenWidth, screenHeight, displayId, recordAudio, audioInputDeviceId}),
+  ({x, y, width, height, displayId, recordAudio, audioInputDeviceId}) => ({x, y, width, height, displayId, recordAudio, audioInputDeviceId}),
   ({willStartRecording}) => ({willStartRecording})
 )(RecordButton);

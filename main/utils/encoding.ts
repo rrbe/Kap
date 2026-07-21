@@ -2,7 +2,7 @@
 
 import path from 'path';
 import execa from 'execa';
-import tempy from 'tempy';
+import {temporaryFile} from './temporary-path';
 import {track} from '../common/analytics';
 import ffmpegPath from './ffmpeg-path';
 
@@ -17,7 +17,7 @@ export const getEncoding = async (filePath: string) => {
 
 // `ffmpeg -i original.mp4 -vcodec libx264 -crf 27 -preset veryfast -c:a copy output.mp4`
 export const convertToH264 = async (inputPath: string) => {
-  const outputPath = tempy.file({extension: path.extname(inputPath)});
+  const outputPath = temporaryFile({extension: path.extname(inputPath)});
 
   track('encoding/converted/hevc');
 

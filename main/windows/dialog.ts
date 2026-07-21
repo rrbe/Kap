@@ -1,16 +1,17 @@
 'use strict';
 
 import {BrowserWindow, Rectangle} from 'electron';
-import {ipcMain as ipc} from 'electron-better-ipc';
+import {ipcMain as ipc} from '../utils/ipc';
 import {loadRoute} from '../utils/routes';
 import {windowManager} from './manager';
+import {secureWebPreferences} from './web-preferences';
 
 const DIALOG_MIN_WIDTH = 420;
 const DIALOG_MIN_HEIGHT = 150;
 
 export type DialogOptions = any;
 
-const showDialog = async (options: DialogOptions) => new Promise<number | void>(resolve => {
+const showDialog = async (options: DialogOptions) => new Promise<number | void>((resolve, reject) => {
   const dialogWindow = new BrowserWindow({
     width: 1,
     height: 1,
@@ -24,14 +25,8 @@ const showDialog = async (options: DialogOptions) => new Promise<number | void>(
     center: true,
     title: '',
     useContentSize: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false
-    }
+    webPreferences: secureWebPreferences
   });
-
-  loadRoute(dialogWindow, 'dialog');
 
   let buttons: any[];
   let wasActionTaken;
@@ -89,10 +84,16 @@ const showDialog = async (options: DialogOptions) => new Promise<number | void>(
     resolve(value);
   };
 
-  dialogWindow.webContents.on('did-finish-load', async () => {
-    await updateUi(options);
-    dialogWindow.show();
-  });
+  loadRoute(dialogWindow, 'dialog')
+    .then(async () => {
+      await updateUi(options);
+      dialogWindow.show();
+    })
+    .catch(error => {
+      unsubscribe();
+      dialogWindow.destroy();
+      reject(error);
+    });
 });
 
 windowManager.setDialog({

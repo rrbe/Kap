@@ -1,21 +1,13 @@
-import electron from 'electron';
-import {Container} from 'unstated';
+import {Container} from '../utils/state-container';
+import {settings} from '../utils/settings';
 
 const barWidth = 464;
 const barHeight = 64;
 
 export default class ActionBarContainer extends Container {
-  remote = electron.remote || false;
-
   constructor() {
     super();
-
-    if (!this.remote) {
-      this.state = {};
-      return;
-    }
-
-    this.settings = this.remote.require('./common/settings').settings;
+    this.settings = settings;
     this.state = {
       cropperWidth: '',
       cropperHeight: ''
@@ -42,6 +34,8 @@ export default class ActionBarContainer extends Container {
     const {x, y, ratioLocked} = cropper ? this.settings.get('actionBar') : {};
 
     this.setState({
+      advanced: false,
+      isMoving: false,
       screenWidth: width,
       screenHeight: height,
       x: x ? x : (width - barWidth) / 2,

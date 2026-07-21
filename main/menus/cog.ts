@@ -6,6 +6,7 @@ import {getAudioDevices, getDefaultInputDevice} from '../utils/devices';
 import {settings} from '../common/settings';
 import {defaultInputDeviceId} from '../common/constants';
 import {hasMicrophoneAccess} from '../common/system-permissions';
+import {isDevelopment} from '../utils/environment';
 
 const getCogMenuTemplate = async (): Promise<MenuOptions> => [
   getAboutMenuItem(),
@@ -95,7 +96,14 @@ const getMicrophoneItem = async (): Promise<MenuOptions[number]> => {
 };
 
 export const getCogMenu = async () => {
-  return Menu.buildFromTemplate(
+  const startedAt = Date.now();
+  const menu = Menu.buildFromTemplate(
     await getCogMenuTemplate()
   );
+
+  if (isDevelopment) {
+    console.log(`Built context menu in ${Date.now() - startedAt}ms`);
+  }
+
+  return menu;
 };

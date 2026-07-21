@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "next-env.d.ts",
+    "vite-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "**/*.js"

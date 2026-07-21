@@ -1,9 +1,10 @@
 import {serial as testAny, TestInterface} from 'ava';
-import tempy from 'tempy';
 import fs from 'fs';
+import moment from 'moment';
 import sinon, {SinonFakeTimers} from 'sinon';
 import path from 'path';
 import type {MockWindowManager} from './mocks/window-manager';
+import {temporaryFile} from '../main/utils/temporary-path';
 
 const test = testAny as TestInterface<{
   now: Date;
@@ -42,7 +43,10 @@ const corrupt = path.resolve(__dirname, 'fixtures', 'corrupt.mp4');
 
 test.before(t => {
   t.context.now = new Date('2020-07-21T15:27:26.564Z');
-  t.context.clock = sinon.useFakeTimers(t.context.now.getTime());
+  t.context.clock = sinon.useFakeTimers({
+    now: t.context.now.getTime(),
+    toFake: ['Date']
+  });
 });
 
 test.after(t => {
@@ -64,8 +68,8 @@ test.afterEach.always(t => {
 });
 
 test('`getPastRecordings()`', t => {
-  const existingPath = tempy.file({extension: 'mp4'});
-  const missingPath = tempy.file({extension: 'mp4'});
+  const existingPath = temporaryFile({extension: 'mp4'});
+  const missingPath = temporaryFile({extension: 'mp4'});
 
   fs.writeFileSync(existingPath, 'data');
   t.context.paths = [existingPath];
@@ -172,7 +176,7 @@ test('`hasActiveRecording()` with known corrupt recording', async t => {
 });
 
 test('`hasActiveRecording()` with unknown corrupt recording', async t => {
-  const filePath = tempy.file();
+  const filePath = temporaryFile();
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
@@ -216,7 +220,7 @@ test('`setCurrentRecording()`', t => {
 
   t.deepEqual(recordingHistory.get('activeRecording'), {
     filePath: 'some/path',
-    name: 'Kapture 2020-07-21 at 11.27.26',
+    name: `Kapture ${moment(t.context.now).format('YYYY-MM-DD')} at ${moment(t.context.now).format('HH.mm.ss')}`,
     date: t.context.now.toISOString(),
     apertureOptions: {some: 'options'} as any,
     plugins: {some: 'plugins'} as any
@@ -256,7 +260,7 @@ test('`updatePluginState()`', t => {
 });
 
 test('`stopCurrentRecording()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
@@ -285,14 +289,14 @@ test('`stopCurrentRecording()`', t => {
 });
 
 test('`cleanPastRecordings()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
   fs.writeFileSync(filePath, 'data');
   t.context.paths = [filePath];
 
   recordingHistory.set('recordings', [
     {filePath},
     // Should ignore file that doesn't exist
-    {filePath: tempy.file({extension: 'mp4'})}
+    {filePath: temporaryFile({extension: 'mp4'})}
   ]);
 
   cleanPastRecordings();
@@ -301,7 +305,7 @@ test('`cleanPastRecordings()`', t => {
 });
 
 test('`addRecording()`', t => {
-  const filePath = tempy.file({extension: 'mp4'});
+  const filePath = temporaryFile({extension: 'mp4'});
 
   addRecording({filePath} as PastRecording);
 

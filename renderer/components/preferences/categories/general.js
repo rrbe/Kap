@@ -1,7 +1,5 @@
-import electron from 'electron';
 import React from 'react';
 import PropTypes from 'prop-types';
-import tildify from 'tildify';
 
 import {connect, PreferencesContainer} from '../../../containers';
 
@@ -20,16 +18,10 @@ class General extends React.Component {
     category: 'general'
   };
 
-  state = {};
-
-  componentDidMount() {
-    this.setState({
-      showCursorSupported: electron.remote.require('macos-version').isGreaterThanOrEqualTo('10.13')
-    });
-  }
+  state = {highlightClicksSupported: window.kap.app.getInfo().highlightClicksSupported};
 
   openKapturesDir = () => {
-    electron.shell.openPath(this.props.kapturesDir);
+    window.kap.shell.openPath(this.props.kapturesDir);
   };
 
   render() {
@@ -48,53 +40,53 @@ class General extends React.Component {
       setAudioInputDeviceId,
       audioDevices,
       recordAudio,
+      recordSystemAudio,
       pickKapturesDir,
       setOpenOnStartup,
       updateShortcut,
       toggleShortcuts,
       category,
+      hardwareAcceleratedExports,
       lossyCompression,
       shortcuts,
       shortcutMap
     } = this.props;
 
-    const {showCursorSupported} = this.state;
+    const {highlightClicksSupported} = this.state;
 
     const devices = audioDevices.map(device => ({
       label: device.name,
       value: device.id
     }));
 
-    const kapturesDirPath = tildify(kapturesDir);
+    const homeDirectory = window.kap.app.getInfo().homeDirectory;
+    const kapturesDirPath = kapturesDir === homeDirectory || kapturesDir.startsWith(`${homeDirectory}/`) ? kapturesDir.replace(homeDirectory, '~') : kapturesDir;
     const tabIndex = category === 'general' ? 0 : -1;
     const fpsOptions = [{label: '30 FPS', value: false}, {label: '60 FPS', value: true}];
 
     return (
       <Category>
-        {
-          showCursorSupported &&
-          <Item
-            key="showCursor"
-            parentItem
-            title="Show cursor"
-            subtitle="Display the mouse cursor in your Kaptures"
-          >
-            <Switch
-              tabIndex={tabIndex}
-              checked={showCursor}
-              onClick={
-                () => {
-                  if (showCursor) {
-                    toggleSetting('highlightClicks', false);
-                  }
-
-                  toggleSetting('showCursor');
+        <Item
+          key="showCursor"
+          parentItem
+          title="Show cursor"
+          subtitle="Display the mouse cursor in your Kaptures"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={showCursor}
+            onClick={
+              () => {
+                if (showCursor) {
+                  toggleSetting('highlightClicks', false);
                 }
-              }/>
-          </Item>
-        }
+
+                toggleSetting('showCursor');
+              }
+            }/>
+        </Item>
         {
-          showCursorSupported &&
+          highlightClicksSupported &&
           <Item key="highlightClicks" subtitle="Highlight clicks">
             <Switch
               tabIndex={tabIndex}
@@ -130,6 +122,16 @@ class General extends React.Component {
           subtitle="Infinitely loop exports when supported"
         >
           <Switch tabIndex={tabIndex} checked={loopExports} onClick={() => toggleSetting('loopExports')}/>
+        </Item>
+        <Item
+          key="recordSystemAudio"
+          title="System audio"
+          subtitle="Include audio played by apps and the system"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={recordSystemAudio}
+            onClick={() => toggleSetting('recordSystemAudio')}/>
         </Item>
         <Item
           key="recordAudio"
@@ -189,6 +191,17 @@ class General extends React.Component {
           <Button tabIndex={tabIndex} title="Choose" onClick={pickKapturesDir}/>
         </Item>
         <Item
+          key="hardwareAcceleratedExports"
+          title="Hardware-accelerated exports"
+          subtitle="Reduce H.264 and HEVC export CPU usage with VideoToolbox"
+        >
+          <Switch
+            tabIndex={tabIndex}
+            checked={hardwareAcceleratedExports}
+            onClick={() => toggleSetting('hardwareAcceleratedExports')}
+          />
+        </Item>
+        <Item
           key="lossyCompression"
           parentItem
           title="Lossy GIF compression"
@@ -216,6 +229,7 @@ General.propTypes = {
   setAudioInputDeviceId: PropTypes.elementType.isRequired,
   audioDevices: PropTypes.array,
   recordAudio: PropTypes.bool,
+  recordSystemAudio: PropTypes.bool,
   kapturesDir: PropTypes.string,
   openOnStartup: PropTypes.bool,
   allowAnalytics: PropTypes.bool,
@@ -227,6 +241,7 @@ General.propTypes = {
   category: PropTypes.string,
   shortcutMap: PropTypes.object,
   shortcuts: PropTypes.object,
+  hardwareAcceleratedExports: PropTypes.bool,
   lossyCompression: PropTypes.bool
 };
 
@@ -237,6 +252,7 @@ export default connect(
     highlightClicks,
     record60fps,
     recordAudio,
+    recordSystemAudio,
     enableShortcuts,
     audioInputDeviceId,
     audioDevices,
@@ -245,6 +261,7 @@ export default connect(
     allowAnalytics,
     loopExports,
     category,
+    hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,
     shortcutMap
@@ -253,6 +270,7 @@ export default connect(
     highlightClicks,
     record60fps,
     recordAudio,
+    recordSystemAudio,
     enableShortcuts,
     audioInputDeviceId,
     audioDevices,
@@ -261,6 +279,7 @@ export default connect(
     allowAnalytics,
     loopExports,
     category,
+    hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,
     shortcutMap

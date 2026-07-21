@@ -1,12 +1,11 @@
-import electron from 'electron';
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Linkify from 'react-linkify';
 import {HelpIcon} from '../../../vectors';
+import {linkifyText} from '../../../utils/linkify-text';
 
 export const Link = ({href, children}) => (
-  <span onClick={async () => electron.shell.openExternal(href)}>
+  <span onClick={async () => window.kap.shell.openExternal(href)}>
     {children}
     <style jsx>{`
       color: var(--kap);
@@ -75,7 +74,7 @@ class Item extends React.Component {
               }
             </div>
             <div className={subtitleClassName} title={tooltip} onClick={onSubtitleClick}>
-              { subtitleArray.map(s => <div key={s}><Linkify component={Link}>{s}</Linkify></div>) }
+              { subtitleArray.map(s => <div key={s}>{linkifyText(s, Link)}</div>) }
             </div>
           </div>
           <div className="input">
