@@ -1,17 +1,12 @@
 import path from 'path';
 import {inspect} from 'util';
 import os from 'os';
-import {clipboard, shell, app, net} from 'electron';
-import got from 'got';
-import {setTimeout as delay} from 'timers/promises';
+import {clipboard, app} from 'electron';
 import macosRelease from './macos-release';
 
 import {windowManager} from '../windows/manager';
-import Sentry, {isSentryEnabled} from './sentry';
 import {InstalledPlugin} from '../plugins/plugin';
 import {openGitHubIssue} from './github-issue';
-
-const MAX_RETRIES = 10;
 
 const ensureError = (value: unknown) => value instanceof Error ? value : new Error(inspect(value));
 
@@ -22,44 +17,6 @@ const ERRORS_TO_IGNORE = [
 ];
 
 const shouldIgnoreError = (errorText: string) => ERRORS_TO_IGNORE.some(regex => regex.test(errorText));
-
-type SentryIssue = {
-  issueId: string;
-  shortId: string;
-  permalink: string;
-  ghUrl: string;
-} | {
-  issueId: string;
-  shortId: string;
-  permalink: string;
-  ghIssueTemplate: string;
-} | {
-  error: string;
-};
-
-const getSentryIssue = async (eventId: string, tries = 0): Promise<SentryIssue | undefined | void> => {
-  if (tries > MAX_RETRIES) {
-    return;
-  }
-
-  try {
-    // This endpoint will poll the Sentry API with the event ID until it gets an issue ID (~8 seconds).
-    // It will then filter through GitHub issues to try and find an issue matching that issue ID.
-    // It will return the issue information if it finds it or a partial template to use to create one if not.
-    // https://github.com/wulkano/kap-sentry-tracker
-    const body = await got.get(`https://kap-sentry-tracker.vercel.app/api/event/${eventId}`).json<SentryIssue & {pending?: boolean}>();
-
-    if (body.pending) {
-      await delay(2000);
-      return await getSentryIssue(eventId, tries + 1);
-    }
-
-    return body;
-  } catch (error) {
-    // We are not using `showError` again here to avoid an infinite error cycle
-    console.log(error);
-  }
-};
 
 const getPrettyStack = (error: Error) => {
   const pluginsPath = path.join(app.getPath('userData'), 'plugins', 'node_modules');
@@ -73,8 +30,8 @@ const getPrettyStack = (error: Error) => {
 
 const release = macosRelease();
 
-const getIssueBody = (title: string, errorStack: string, sentryTemplate = '') => `
-${sentryTemplate}<!--
+const getIssueBody = (title: string, errorStack: string) => `
+<!--
 Thank you for helping us test Kap. Your feedback helps us make Kap better for everyone!
 -->
 
@@ -111,7 +68,7 @@ export const showError = async (
   }
 
   const mainButtons = [
-    'Don\'t Report',
+    'Close',
     {
       label: 'Copy Error',
       action: () => {
@@ -142,66 +99,12 @@ export const showError = async (
     });
   }
 
-  let message;
-  const buttons: any[] = [...mainButtons];
-
-  if (isSentryEnabled && net.isOnline()) {
-    const eventId = Sentry.captureException(ensuredError);
-    const sentryIssuePromise = getSentryIssue(eventId);
-
-    message = 'Reporting this issue will help us track it better and resolve it faster.';
-
-    buttons.push({
-      label: 'Collect Info and Report',
-      activeLabel: 'Collecting Info…',
-      action: async (_: unknown, updateUi: any) => {
-        const issue = await sentryIssuePromise;
-
-        if (!issue || 'error' in issue) {
-          updateUi({
-            message: 'Something went wrong while collecting the information.',
-            buttons: mainButtons
-          });
-        } else if ('ghUrl' in issue) {
-          updateUi({
-            message: 'This issue is already being tracked!',
-            buttons: [
-              ...mainButtons, {
-                label: 'View Issue',
-                action: async () => shell.openExternal(issue.ghUrl)
-              }
-            ]
-          });
-        } else {
-          updateUi({
-            buttons: [
-              ...mainButtons,
-              {
-                label: 'Open Issue',
-                action: () => {
-                  openGitHubIssue({
-                    user: 'wulkano',
-                    repo: 'kap',
-                    title,
-                    body: getIssueBody(title, detail, issue.ghIssueTemplate),
-                    labels: ['sentry']
-                  });
-                }
-              }
-            ]
-          });
-        }
-      }
-    });
-  }
-
   return windowManager.dialog?.open({
     title,
     detail,
-    buttons,
-    message,
+    buttons: mainButtons,
     cancelId: 0,
-    defaultId: buttons.length > 2 ? 2 : 0
+    defaultId: 0
   });
 };
 

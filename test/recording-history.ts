@@ -16,13 +16,11 @@ import {mockImport, mockModule} from './helpers/mocks';
 
 mockImport('./windows/manager', 'window-manager');
 mockImport('./plugins', 'plugins');
-mockImport('./utils/sentry', 'sentry');
 mockImport('../common/analytics', 'analytics');
 
 import {shell} from './mocks/electron';
 import * as dialog from './mocks/dialog';
 import {plugins} from './mocks/plugins';
-import Sentry from './mocks/sentry';
 import {windowManager} from './mocks/window-manager';
 
 import {
@@ -206,9 +204,6 @@ test('`hasActiveRecording()` with unknown corrupt recording', async t => {
 
   t.false(recordingHistory.has('activeRecording'));
   t.is(recordingHistory.get('recordings').length, 0);
-
-  const sentryError = Sentry.captureException.lastCall.args[0];
-  t.true(sentryError.message.startsWith('Corrupt recording:'));
 });
 
 test('`setCurrentRecording()`', t => {

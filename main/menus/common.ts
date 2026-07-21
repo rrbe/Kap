@@ -57,8 +57,8 @@ export const getSendFeedbackMenuItem = () => ({
   label: 'Send Feedback…',
   click() {
     openGitHubIssue({
-      user: 'wulkano',
-      repo: 'kap',
+      user: 'rrbe',
+      repo: 'Kap',
       body: issueBody
     });
   }

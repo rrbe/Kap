@@ -1,57 +1,73 @@
-<p align="center">
-  <img src="https://getkap.co/static/favicon/kap.svg" height="64">
-  <h3 align="center">Kap</h3>
-  <p align="center">An open-source screen recorder built with web technology<p>
-  <p align="center"><a href="https://circleci.com/gh/wulkano/kap"><img src="https://circleci.com/gh/wulkano/Kap.svg?style=shield" alt="Build Status"></a> <a href="https://github.com/sindresorhus/xo"><img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="XO code style"></a></p>
-</p>
+# Kap
 
-[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine/)
+[中文说明](README_CN.md)
 
-## Get Kap
+Kap is an open-source screen recorder for macOS. This repository is an independently maintained fork focused on faster startup and export, current macOS support, native Apple silicon and Intel builds, and room for new recording features.
 
-Download the latest release:
+> This project is forked from [wulkano/Kap](https://github.com/wulkano/Kap). It is not affiliated with, endorsed by, or maintained by the original authors. The original copyright and MIT license are preserved.
 
-- [Apple silicon](https://getkap.co/api/download/arm64)
-- [Intel](https://getkap.co/api/download/x64)
+## Why rebuild Kap?
 
-Or install with [Homebrew-Cask](https://caskroom.github.io):
+The upstream project has not received a feature release since October 2022, and its only later `main` commit updated CI configuration in February 2024. Meanwhile, its runtime and native dependencies aged past the versions supported by current macOS and Node.js releases.
+
+This fork exists to address the problems that had accumulated:
+
+- **Slow recorder opening.** The original selector destroyed and recreated a Cropper `BrowserWindow` for every display each time it opened. Closing one Cropper also triggered the all-Cropper cleanup path, so opening the selector repeatedly paid for window teardown, renderer reloads, and multi-display synchronization. The fork keeps a reusable window pool instead.
+- **Slow exports.** Unchanged MP4 recordings were transcoded unnecessarily, and software-only H.264/HEVC encoding consumed substantial CPU and time. The fork adds a clone/copy fast path and optional VideoToolbox hardware encoding while retaining software fallbacks.
+- **Incomplete architecture support.** Several bundled helpers were Intel-only, so an apparently native Apple silicon build could still enter Rosetta on common paths. The final app now uses target-architecture or universal Mach-O binaries throughout and is built separately for arm64 and x64.
+- **Unnecessary web framework overhead.** Kap renderer pages are fully local static pages; they do not use server-side rendering. Next.js and its SSR-oriented build pipeline added weight and compatibility problems without providing runtime value, so the renderer now uses Vite.
+- **A blocked feature path.** The maintained codebase is intended to support additions such as recording countdowns, clearer on-screen prompts, and further capture and editing improvements.
+
+## What changed?
+
+- Replaced the legacy AVFoundation capture executable with a universal ScreenCaptureKit helper supporting system audio, microphone input, pause/resume, cancellation, and cleanup.
+- Replaced Electron `remote` access with context-isolated renderer processes and a typed preload/IPC boundary.
+- Upgraded Electron, React, TypeScript, and the test toolchain; replaced Next.js with Vite.
+- Reused Cropper windows and cached audio-device discovery to remove repeated work from common UI paths.
+- Added unchanged-MP4 copy, VideoToolbox H.264/HEVC encoding with software fallback, and FFmpeg-native GIF generation.
+- Replaced Intel-only native packages with one universal Swift system helper.
+- Migrated from Yarn to pnpm, reduced direct dependencies, and removed known production dependency vulnerabilities.
+- Added separate arm64/x64 CI packaging and packaged-binary architecture checks.
+
+The implementation plan, measurements, and validation details are in [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md) and [docs/modernization-baseline.md](docs/modernization-baseline.md).
+
+## Download and install
+
+Download the latest DMG from [GitHub Releases](https://github.com/rrbe/Kap/releases). Choose the `arm64` build for Apple silicon or the `x64` build for an Intel Mac.
+
+Kap requires macOS 13 or newer.
+
+Automatic updates are disabled because ad-hoc signatures do not provide a stable identity across releases. Install upgrades manually from the Releases page.
+
+### Gatekeeper notice
+
+Releases from this fork are ad-hoc signed and are not notarized by Apple. This removes the dependency on the original authors' Developer ID certificate, but macOS will not treat the app as an identified-developer release.
+
+After copying Kap to `/Applications`, remove the quarantine attribute before the first launch:
 
 ```sh
-brew install --cask kap
+xattr -dr com.apple.quarantine /Applications/Kap.app
 ```
 
-Kap requires macOS 13 or newer. Apple silicon and Intel builds are produced and tested separately so their native dependencies match the target architecture.
+Only bypass quarantine for a release downloaded from this repository and trusted by you.
 
-## How To Use Kap
+## Usage
 
-Click the menu bar icon to bring up the screen recorder. After selecting what portion of the screen you'd like to record, hit the record button to start recording. Click the menu bar icon again to stop the recording.
+Click the menu bar icon, select a region, and press the record button. Click the menu bar icon again to stop recording.
 
-> Tip: While recording, Option-click the menu bar icon to pause or right-click for more options.
+While recording, Option-click the menu bar icon to pause, or right-click it for more actions.
 
-## Contribute
+## Development
 
-Read the [contribution guide](contributing.md).
+```sh
+nvm install
+corepack enable
+pnpm install --frozen-lockfile
+pnpm start
+```
 
-## Plugins
+Run `pnpm test` for lint and the automated test suite. See [contributing.md](contributing.md) for contribution details and [docs/plugins.md](docs/plugins.md) for the plugin API.
 
-For more info on how to create plugins, read the [plugins docs](docs/plugins.md).
+## License and attribution
 
-## Dev builds
-
-Download [`main`](https://kap-artifacts.now.sh/main) or builds for any other branch using: `https://kap-artifacts.now.sh/<branch>`. Note that these builds are unsupported and may have issues.
-
-## Related Repositories
-
-- [Website](https://github.com/wulkano/kap-website)
-- [Aperture](https://github.com/wulkano/aperture)
-
-## Newsletter
-
-[Subscribe](http://eepurl.com/ch90_1)
-
-## Thanks
-
-- [▲ Vercel](https://vercel.com/) for fast deployments served from the edge, hosting our website, downloads, and updates.
-- [● CircleCI](https://circleci.com/) for supporting the open source community and making our builds fast and reliable.
-- [△ Sentry](https://sentry.io/) for letting us know when Kap isn't behaving and helping us eradicate said behaviour.
-- Our [contributors](https://github.com/wulkano/kap/contributors) who help maintain Kap and make screen recording and sharing easy.
+Kap is available under the [MIT License](LICENSE.md). This fork retains the original project history, copyright notice, and contributor attribution while being maintained independently from the original authors.
