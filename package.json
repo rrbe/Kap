@@ -28,6 +28,7 @@
     "check:app-architecture": "node scripts/check-app-architecture.mjs",
     "dist": "pnpm build && electron-builder",
     "pack": "pnpm build && electron-builder --dir",
+    "pack:dev": "pnpm build && electron-builder --dir --config.mac.type=development",
     "postinstall": "node -e \"require('electron')\" && electron-builder install-app-deps",
     "prepare": "husky",
     "sentry-version": "echo \"$npm_package_name@$npm_package_version\"",
@@ -290,6 +291,7 @@
       "notarize": true,
       "entitlements": "./build/entitlements.mac.inherit.plist",
       "extendInfo": {
+        "NSScreenCaptureUsageDescription": "Kap needs access to the screen to record it.",
         "NSMicrophoneUsageDescription": "Kap needs access to the microphone to be able to record audio for screen recordings.",
         "NSCameraUsageDescription": "A Kap plugin wants to use the camera.",
         "NSUserNotificationAlertStyle": "alert",
