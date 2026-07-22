@@ -317,6 +317,13 @@ const setRecordingCroppers = () => {
   }
 };
 
+const setCountdown = (displayId: number, seconds: number | null) => {
+  const cropper = croppers.get(displayId);
+  if (cropper && !cropper.isDestroyed()) {
+    cropper.webContents.send('recording-countdown', seconds);
+  }
+};
+
 const isCropperOpen = () => isOpen;
 
 app.on('before-quit', destroyAllCroppers);
@@ -331,6 +338,7 @@ windowManager.setCropper({
   open: openCropperWindow,
   close: hideAllCroppers,
   selectApp,
+  setCountdown,
   setRecording: setRecordingCroppers,
   isOpen: isCropperOpen,
   disable: disableCroppers

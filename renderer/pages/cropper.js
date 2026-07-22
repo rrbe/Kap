@@ -23,6 +23,7 @@ let lastRatioLockState = null;
 
 export default class CropperPage extends React.Component {
   dev = false;
+  state = {countdown: null};
 
   constructor(props) {
     super(props);
@@ -43,6 +44,10 @@ export default class CropperPage extends React.Component {
 
     ipcRenderer.on('start-recording', () => {
       cropperContainer.setRecording();
+    });
+
+    ipcRenderer.on('recording-countdown', (_, countdown) => {
+      this.setState({countdown});
     });
 
     globalThis.window.addEventListener('focus', () => {
@@ -69,7 +74,10 @@ export default class CropperPage extends React.Component {
   handleKeyEvent = event => {
     switch (event.key) {
       case 'Escape':
-        window.kap.window.close();
+        if (!cropperContainer.state.willStartRecording) {
+          window.kap.window.close();
+        }
+
         break;
       case 'Shift':
         if (event.type === 'keydown' && !event.defaultPrevented) {
@@ -94,11 +102,14 @@ export default class CropperPage extends React.Component {
   };
 
   render() {
+    const {countdown} = this.state;
+
     return (
       <div className="cover-screen">
         <Provider inject={[cursorContainer, cropperContainer, actionBarContainer]}>
           <Overlay>
             <Cropper/>
+            {countdown && <div className="countdown">{countdown}</div>}
             <ActionBar/>
           </Overlay>
         </Provider>
@@ -117,6 +128,21 @@ export default class CropperPage extends React.Component {
           .content {
             flex: 1;
             display: flex;
+          }
+
+          .countdown {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 80px;
+            font-weight: 600;
+            line-height: 1;
+            pointer-events: none;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
           }
 
           @keyframes shake {

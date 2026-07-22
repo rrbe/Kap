@@ -23,6 +23,10 @@ test('reuses cropper windows until the app quits', async t => {
   t.is(browserWindows.length, 2);
   t.true(browserWindows.every(window => !window.hidden));
 
+  windowManager.cropper?.setCountdown(2, 3);
+  t.false(browserWindows[0].webContents.send.calledWith('recording-countdown', 3));
+  t.true(browserWindows[1].webContents.send.calledWith('recording-countdown', 3));
+
   app.emit('before-quit');
   t.true(browserWindows.every(window => window.destroyed));
 });

@@ -44,7 +44,7 @@ const allowedCallMainChannels = new Set([
 ]);
 const allowedAnswerMainChannels = new Set(['data', 'kap-window-state', 'mount']);
 const allowedSendChannels = new Set(['drag-export', 'renderer-ready']);
-const allowedOnChannels = new Set(['blur', 'display', 'select-app', 'start-recording']);
+const allowedOnChannels = new Set(['blur', 'display', 'recording-countdown', 'select-app', 'start-recording']);
 const remoteStateChannel = /^kap-remote-state-(editor-options|exports|exports-list)-(subscribe|get-state|call-action|state-updated)$/;
 const dialogActionChannel = /^dialog-action-\d+$/;
 
