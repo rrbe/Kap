@@ -44,4 +44,4 @@ pnpm start
 
 ## 许可证
 
-Kap 使用 [MIT License](LICENSE.md)。本项目由 [wulkano/Kap](https://github.com/wulkano/Kap) fork 而来，现已独立维护，并保留原项目的版权与贡献者归属。
+Kap 使用 [MIT License](LICENSE.md)。

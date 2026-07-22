@@ -44,4 +44,4 @@ Run `pnpm test` for lint and automated tests, and `pnpm build` for a production 
 
 ## License
 
-Kap is available under the [MIT License](LICENSE.md). This independently maintained project was originally forked from [wulkano/Kap](https://github.com/wulkano/Kap) and retains its copyright and contributor attribution.
+Kap is available under the [MIT License](LICENSE.md).
