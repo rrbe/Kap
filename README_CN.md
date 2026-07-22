@@ -34,14 +34,13 @@ xattr -dr com.apple.quarantine /Applications/Kap.app
 ## 开发
 
 ```sh
-nvm install
 corepack enable
 pnpm install --frozen-lockfile
 pnpm start
 ```
 
-运行 `pnpm test` 执行 lint 和自动化测试，运行 `pnpm build` 生成生产构建。贡献说明见 [contributing.md](contributing.md)。
+运行 `pnpm test` 执行 lint 和自动化测试，运行 `pnpm build` 生成生产构建。
 
 ## 许可证
 
-Kap 使用 [MIT License](LICENSE.md)。本项目由 [wulkano/Kap](https://github.com/wulkano/Kap) fork 而来，现已独立维护，并保留原项目的版权与贡献者归属。
+Kap 使用 [MIT License](LICENSE.md)。
