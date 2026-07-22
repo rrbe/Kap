@@ -6,6 +6,8 @@ Run `nvm install && corepack enable`, then `pnpm install --frozen-lockfile`. `pn
 
 Run `pnpm test` before submitting changes. Run `pnpm build` when a change affects packaging or the renderer build.
 
+For local use, `make dmg` builds a DMG with the first Apple Development identity in the keychain, and `make install` also replaces `/Applications/Kap.app`. Use `make dmg-adhoc` to build an ad-hoc-signed DMG for sharing or release testing.
+
 ## Releases
 
 Releases are ad-hoc signed with electron-builder and are not notarized. No Developer ID certificate or Apple account is required. GitHub Actions builds arm64 and x64 packages on native runners, runs the tests, verifies each app's signature and binary architecture, verifies the DMG, and uploads the release files as workflow artifacts.
