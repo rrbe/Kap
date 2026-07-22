@@ -1,4 +1,5 @@
 import {windowManager} from './windows/manager';
+import {setTimeout as delay} from 'timers/promises';
 import {setRecordingTray, setPausedTray, disableTray, resetTray} from './tray';
 import {setCropperShortcutAction} from './global-accelerators';
 import {settings} from './common/settings';
@@ -12,6 +13,15 @@ import {screenRecorder} from './utils/screen-recorder';
 
 let apertureOptions: ApertureOptions;
 let past: number | undefined;
+
+const runRecordingCountdown = async (displayId: number) => {
+  for (let seconds = 3; seconds > 0; seconds--) {
+    windowManager.cropper?.setCountdown(displayId, seconds);
+    await delay(1000);
+  }
+
+  windowManager.cropper?.setCountdown(displayId, null);
+};
 
 const cleanup = () => {
   windowManager.cropper?.close();
@@ -60,6 +70,8 @@ export const startRecording = async (options: StartRecordingOptions) => {
       apertureOptions.audioDeviceId = defaultAudioDevice?.id;
     }
   }
+
+  await runRecordingCountdown(displayId);
 
   // TODO: figure out how to correctly process hevc videos with ffmpeg
   // if (recordHevc) {
