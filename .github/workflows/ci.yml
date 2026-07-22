@@ -32,6 +32,8 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - name: Package
+        env:
+          CSC_FOR_PULL_REQUEST: true
         run: pnpm exec electron-builder --mac --${{ matrix.arch }}
       - name: Verify signature
         env:

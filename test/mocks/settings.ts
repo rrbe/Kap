@@ -2,7 +2,9 @@ import sinon from 'sinon';
 
 const mocks: Record<string, any> = {};
 
-const mockGet = sinon.fake((key: string, defaultValue: any) => mocks[key] || defaultValue);
+const mockGet = sinon.fake((key: string, defaultValue: any) => (
+  Object.hasOwn(mocks, key) ? mocks[key] : defaultValue
+));
 
 export const settings = {
   get: mockGet,
