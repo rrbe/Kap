@@ -19,6 +19,17 @@ const mainStyle = css`
     flex: 1;
     align-items: center;
   }
+
+  .control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--icon-color);
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+  }
 `;
 
 const MainControls = {};
@@ -48,20 +59,20 @@ class Left extends React.Component {
 
     return (
       <div className="main">
-        <div className="crop">
+        <div className="control crop">
           <CropIcon tabIndex={advanced ? -1 : 0} onClick={toggleAdvanced}/>
+          <span>Area</span>
         </div>
-        <IconMenu isMenu icon={ApplicationsIcon} tabIndex={advanced ? -1 : 0} active={Boolean(selectedApp)} onOpen={this.openMenu}/>
+        <div className="control">
+          <IconMenu isMenu icon={ApplicationsIcon} tabIndex={advanced ? -1 : 0} active={Boolean(selectedApp)} onOpen={this.openMenu}/>
+          <span>Window</span>
+        </div>
         <style jsx>{mainStyle}</style>
         <style jsx>{`
           .crop {
             margin-left: 32px;
             margin-right: 64px;
             width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
           }
         `}</style>
       </div>
@@ -89,20 +100,23 @@ class Right extends React.Component {
 
     return (
       <div className="main">
-        <div className="fullscreen">
+        <div className="control fullscreen">
           {
             isFullscreen ?
               <ExitFullscreenIcon active tabIndex={advanced ? -1 : 0} onClick={exitFullscreen}/> :
               <FullscreenIcon tabIndex={advanced ? -1 : 0} onClick={enterFullscreen}/>
           }
+          <span>Screen</span>
         </div>
-        <IconMenu isMenu icon={MoreIcon} tabIndex={advanced ? -1 : 0} onOpen={this.onCogMenuClick}/>
+        <div className="control">
+          <IconMenu isMenu icon={MoreIcon} tabIndex={advanced ? -1 : 0} onOpen={this.onCogMenuClick}/>
+          <span>More</span>
+        </div>
         <style jsx>{mainStyle}</style>
         <style jsx>{`
           .fullscreen {
             margin-left: 56px;
             margin-right: 64px;
-            height: 24px;
           }
         `}</style>
       </div>
