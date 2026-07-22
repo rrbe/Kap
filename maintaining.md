@@ -6,7 +6,7 @@ Run `nvm install && corepack enable`, then `pnpm install --frozen-lockfile`. `pn
 
 Run `pnpm test` before submitting changes. Run `pnpm build` when a change affects packaging or the renderer build.
 
-For local use, `make build` builds a DMG with the first Apple Development identity in the keychain, and `make install` also replaces `/Applications/Kap.app`. Use `make dmg-adhoc` to build an ad-hoc-signed DMG for sharing or release testing.
+For local use, `make build` builds a DMG with the first Apple Development identity in the keychain, and `make install` also replaces `/Applications/Kap.app`. Use `make build-adhoc` to build an ad-hoc-signed DMG for sharing or release testing.
 
 ## Releases
 
