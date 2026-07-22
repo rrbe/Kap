@@ -40,7 +40,7 @@ pnpm install --frozen-lockfile
 pnpm start
 ```
 
-运行 `pnpm test` 执行 lint 和自动化测试，运行 `pnpm build` 生成生产构建。贡献说明见 [contributing.md](contributing.md)。
+运行 `pnpm test` 执行 lint 和自动化测试，运行 `pnpm build` 生成生产构建。
 
 ## 许可证
 

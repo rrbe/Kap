@@ -40,7 +40,7 @@ pnpm install --frozen-lockfile
 pnpm start
 ```
 
-Run `pnpm test` for lint and automated tests, and `pnpm build` for a production build. See [contributing.md](contributing.md) for contribution details.
+Run `pnpm test` for lint and automated tests, and `pnpm build` for a production build.
 
 ## License
 
