@@ -34,7 +34,6 @@ xattr -dr com.apple.quarantine /Applications/Kap.app
 ## 开发
 
 ```sh
-nvm install
 corepack enable
 pnpm install --frozen-lockfile
 pnpm start

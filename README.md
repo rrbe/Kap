@@ -34,7 +34,6 @@ Use the editor to adjust the clip and choose a format and output action before c
 ## Development
 
 ```sh
-nvm install
 corepack enable
 pnpm install --frozen-lockfile
 pnpm start
