@@ -34,14 +34,13 @@ Use the editor to adjust the clip and choose a format and output action before c
 ## Development
 
 ```sh
-nvm install
 corepack enable
 pnpm install --frozen-lockfile
 pnpm start
 ```
 
-Run `pnpm test` for lint and automated tests, and `pnpm build` for a production build. See [contributing.md](contributing.md) for contribution details.
+Run `pnpm test` for lint and automated tests, and `pnpm build` for a production build.
 
 ## License
 
-Kap is available under the [MIT License](LICENSE.md). This independently maintained project was originally forked from [wulkano/Kap](https://github.com/wulkano/Kap) and retains its copyright and contributor attribution.
+Kap is available under the [MIT License](LICENSE.md).
