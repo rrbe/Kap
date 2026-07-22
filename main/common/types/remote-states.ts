@@ -21,39 +21,18 @@ export type RemoteStateHandler<Base extends RemoteState> = Base extends RemoteSt
   getState: (id: string) => State | undefined;
 } : never;
 
-export interface ExportOptionsPlugin {
-  title: string;
-  pluginName: string;
-  pluginPath: string;
-  apps?: App[];
-  lastUsed: number;
-}
-
 export type ExportOptionsFormat = {
-  plugins: ExportOptionsPlugin[];
   format: Format;
   prettyFormat: string;
-  lastUsed: number;
-};
-
-export type ExportOptionsEditService = {
-  title: string;
-  pluginName: string;
-  pluginPath: string;
-  hasConfig: boolean;
+  apps: App[];
 };
 
 export type ExportOptions = {
   formats: ExportOptionsFormat[];
-  editServices: ExportOptionsEditService[];
   fpsHistory: {[key in Format]: number};
 };
 
 export type EditorOptionsRemoteState = RemoteState<ExportOptions, {
-  updatePluginUsage: ({format, plugin}: {
-    format: Format;
-    plugin: string;
-  }) => void;
   updateFpsUsage: ({format, fps}: {
     format: Format;
     fps: number;

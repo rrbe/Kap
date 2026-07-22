@@ -1,21 +1,13 @@
 import {App, Format} from './base';
 
+export type ExportDestination = 'save' | 'copy' | 'open';
+
 export type CreateExportOptions = {
   filePath: string;
   conversionOptions: ConversionOptions;
   format: Format;
-  plugins: {
-    share: {
-      pluginName: string;
-      serviceTitle: string;
-      app?: App;
-    };
-  };
-};
-
-export type EditServiceInfo = {
-  pluginName: string;
-  serviceTitle: string;
+  destination: ExportDestination;
+  app?: App;
 };
 
 export type ConversionOptions = {
@@ -27,7 +19,6 @@ export type ConversionOptions = {
   shouldCrop: boolean;
   shouldMute: boolean;
   isUnedited?: boolean;
-  editService?: EditServiceInfo;
 };
 
 export enum ExportStatus {

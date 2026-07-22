@@ -4,7 +4,6 @@ import {UseConversionState} from 'hooks/editor/use-conversion';
 import {flags} from '../../../utils/flags';
 import {ExportStatus} from '../../../common/types';
 import {useMemo} from 'react';
-import {template} from 'lodash';
 import IconMenu from '../../icon-menu';
 import {MenuItem} from '../../../utils/menu';
 

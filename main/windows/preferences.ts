@@ -3,23 +3,15 @@ import {promisify} from 'util';
 
 import {ipcMain as ipc} from '../utils/ipc';
 import {loadRoute} from '../utils/routes';
-import {track} from '../common/analytics';
 import {windowManager} from './manager';
 import {secureWebPreferences} from './web-preferences';
 
 let prefsWindow: BrowserWindow | undefined;
 
-export type PreferencesWindowOptions = any;
-
-const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
-  track('preferences/opened');
+const openPrefsWindow = async () => {
   windowManager.cropper?.close();
 
   if (prefsWindow) {
-    if (options) {
-      ipc.callRenderer(prefsWindow, 'options', options);
-    }
-
     prefsWindow.show();
     return prefsWindow;
   }
@@ -40,18 +32,11 @@ const openPrefsWindow = async (options?: PreferencesWindowOptions) => {
     webPreferences: secureWebPreferences
   });
 
-  const titlebarHeight = 85;
-  prefsWindow.setSheetOffset(titlebarHeight);
-
   prefsWindow.on('close', () => {
     prefsWindow = undefined;
   });
 
   await loadRoute(prefsWindow, 'preferences');
-
-  if (options) {
-    ipc.callRenderer(prefsWindow, 'options', options);
-  }
 
   ipc.callRenderer(prefsWindow, 'mount');
 

@@ -1,13 +1,10 @@
-import {GearIcon} from '../../../vectors';
 import OptionsContainer from '../options-container';
 import Select from './select';
-import {ipcRenderer as ipc} from 'utils/ipc';
 import useConversionIdContext from 'hooks/editor/use-conversion-id';
 import useEditorWindowState from 'hooks/editor/use-editor-window-state';
 import VideoTimeContainer from '../video-time-container';
 import VideoControlsContainer from '../video-controls-container';
-import useSharePlugins from 'hooks/editor/use-share-plugins';
-import useEditorOptions from 'hooks/editor/use-editor-options';
+import useExportDestinations from 'hooks/editor/use-export-destinations';
 import VideoMetadataContainer from '../video-metadata-container';
 import {hasExportEdits} from 'common/export-edits';
 
@@ -18,109 +15,9 @@ const FormatSelect = () => {
   return <Select options={options} value={format} onChange={updateFormat}/>;
 };
 
-const PluginsSelect = () => {
-  const {menuOptions, label, onChange} = useSharePlugins();
+const DestinationSelect = () => {
+  const {menuOptions, label, onChange} = useExportDestinations();
   return <Select options={menuOptions} customLabel={label} onChange={onChange}/>;
-};
-
-const EditPluginsControl = () => {
-  const {editServices, editPlugin, setEditPlugin} = OptionsContainer.useContainer();
-
-  if (editServices?.length === 0) {
-    return null;
-  }
-
-  if (!editPlugin) {
-    return (
-      <button
-        type="button" className="add-edit-plugin" onClick={() => {
-          setEditPlugin(editServices[0]);
-        }}
-      >
-        +
-        <style jsx>{`
-          button {
-            padding: 4px 8px;
-            background: rgba(255, 255, 255, 0.1);
-            font-size: 12px;
-            line-height: 12px;
-            color: white;
-            height: 24px;
-            border-radius: 4px;
-            text-align: center;
-            border: none;
-            box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
-          }
-
-          button:hover,
-          button:focus {
-            background: hsla(0, 0%, 100%, 0.2);
-            outline: none;
-          }
-
-          .add-edit-plugin {
-            width: max-content;
-            margin-right: 8px;
-          }
-        `}</style>
-      </button>
-    );
-  }
-
-  const openEditPluginConfig = () => {
-    ipc.callMain('open-edit-config', {
-      pluginName: editPlugin.pluginName,
-      serviceTitle: editPlugin.title
-    });
-  };
-
-  const options = editServices.map(service => ({label: service.title, value: service}));
-
-  return (
-    <>
-      {
-        editPlugin.hasConfig && (
-          <button type="button" className="add-edit-plugin" onClick={openEditPluginConfig}>
-            <GearIcon fill="#fff" hoverFill="#fff" size="12px"/>
-          </button>
-        )
-      }
-      <div className="edit-plugin">
-        <Select clearable options={options} value={editPlugin} onChange={setEditPlugin}/>
-      </div>
-      <style jsx>{`
-        button {
-          padding: 4px 8px;
-          background: rgba(255, 255, 255, 0.1);
-          font-size: 12px;
-          line-height: 12px;
-          color: white;
-          height: 24px;
-          border-radius: 4px;
-          text-align: center;
-          border: none;
-          box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
-        }
-
-        button:hover,
-        button:focus {
-          background: hsla(0, 0%, 100%, 0.2);
-          outline: none;
-        }
-
-        .add-edit-plugin {
-          width: max-content;
-          margin-right: 8px;
-        }
-
-        .edit-plugin {
-          height: 24px;
-          margin-right: 8px;
-          width: 128px;
-        }
-      `}</style>
-    </>
-  );
 };
 
 const ConvertButton = () => {
@@ -130,7 +27,6 @@ const ConvertButton = () => {
   const {startTime, endTime} = VideoTimeContainer.useContainer();
   const {isMuted} = VideoControlsContainer.useContainer();
   const metadata = VideoMetadataContainer.useContainer();
-  const {updatePluginUsage} = useEditorOptions();
 
   const onClick = () => {
     const hasEdits = hasExportEdits({
@@ -155,21 +51,11 @@ const ConvertButton = () => {
         fps: options.fps,
         shouldMute: isMuted,
         shouldCrop: hasEdits,
-        isUnedited: !hasEdits,
-        editService: options.editPlugin ? {
-          pluginName: options.editPlugin.pluginName,
-          serviceTitle: options.editPlugin.title
-        } : undefined
+        isUnedited: !hasEdits
       },
       format: options.format,
-      plugins: {
-        share: options.sharePlugin
-      }
-    });
-
-    updatePluginUsage({
-      format: options.format,
-      plugin: options.sharePlugin.pluginName
+      destination: options.destination,
+      app: options.app
     });
   };
 
@@ -207,9 +93,8 @@ const ConvertButton = () => {
 const RightOptions = () => {
   return (
     <div className="container">
-      <EditPluginsControl/>
       <div className="format"><FormatSelect/></div>
-      <div className="plugin"><PluginsSelect/></div>
+      <div className="destination"><DestinationSelect/></div>
       <ConvertButton/>
       <style jsx>{`
           .container {
@@ -230,7 +115,7 @@ const RightOptions = () => {
             margin-right: 8px;
           }
 
-          .plugin {
+          .destination {
             height: 24px;
             width: 128px;
             margin-right: 8px;

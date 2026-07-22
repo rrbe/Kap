@@ -14,10 +14,6 @@ export interface ConvertOptions {
   shouldMute: boolean;
   onCancel: () => void;
   onProgress: (action: string, progress: number, estimate?: string) => void;
-  editService?: {
-    pluginName: string;
-    serviceTitle: string;
-  };
 }
 
 export const makeEven = (number: number) => 2 * Math.round(number / 2);

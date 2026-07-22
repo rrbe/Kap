@@ -5,17 +5,6 @@ import {ipcRenderer as ipc} from 'utils/ipc';
 import {connect, PreferencesContainer} from '../../../containers';
 
 import General from './general';
-import Plugins from './plugins';
-
-const CATEGORIES = [
-  {
-    name: 'general',
-    Component: General
-  }, {
-    name: 'plugins',
-    Component: Plugins
-  }
-];
 
 class Categories extends React.Component {
   componentDidUpdate(previousProps) {
@@ -26,31 +15,15 @@ class Categories extends React.Component {
   }
 
   render() {
-    const {category} = this.props;
-
-    const index = CATEGORIES.findIndex(({name}) => name === category);
-
     return (
       <div className="categories-container">
-        <div className="switcher"/>
-        {
-          CATEGORIES.map(
-            ({name, Component}) => (
-              <Component key={name}/>
-            )
-          )
-        }
+        <General/>
         <style jsx>{`
             .categories-container {
               flex: 1;
               display: flex;
               overflow-x: hidden;
               background: var(--background-color);
-            }
-
-            .switcher {
-              margin-left: -${index * 100}%;
-              transition: margin 0.3s ease-in-out;
             }
         `}</style>
       </div>
@@ -59,11 +32,10 @@ class Categories extends React.Component {
 }
 
 Categories.propTypes = {
-  category: PropTypes.string,
   isMounted: PropTypes.bool
 };
 
 export default connect(
   [PreferencesContainer],
-  ({category, isMounted}) => ({category, isMounted})
+  ({isMounted}) => ({isMounted})
 )(Categories);

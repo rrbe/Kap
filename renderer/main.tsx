@@ -4,7 +4,6 @@ import {createRoot} from 'react-dom/client';
 import App from './app';
 
 const pages = {
-  config: async () => import('./pages/config'),
   cropper: async () => import('./pages/cropper'),
   dialog: async () => import('./pages/dialog'),
   editor: async () => import('./pages/editor'),

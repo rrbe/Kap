@@ -3,7 +3,6 @@ import createRemoteStateHook from 'hooks/use-remote-state';
 
 const useEditorOptions = createRemoteStateHook<EditorOptionsRemoteState>('editor-options', {
   formats: [],
-  editServices: [],
   fpsHistory: {
     gif: 60,
     mp4: 60,

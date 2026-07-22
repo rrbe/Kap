@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      ajv:
-        specifier: ^8.20.0
-        version: 8.20.0
       classnames:
         specifier: ^2.2.6
         version: 2.5.1
@@ -23,9 +20,6 @@ importers:
       ffmpeg-static:
         specifier: ^5.3.0
         version: 5.3.0
-      got:
-        specifier: 11.8.6
-        version: 11.8.6
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -53,18 +47,12 @@ importers:
       react-dom:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
-      semver:
-        specifier: ^7.3.4
-        version: 7.8.5
       styled-jsx:
         specifier: ^5.1.7
         version: 5.1.7(@babel/core@7.29.7)(react@19.2.7)
       unstated-next:
         specifier: ^1.1.0
         version: 1.1.0
-      yarn:
-        specifier: ^1.22.10
-        version: 1.22.22
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -90,9 +78,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.17)
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
       '@types/sinon':
         specifier: ^22.0.0
         version: 22.0.0
@@ -129,9 +114,6 @@ importers:
       sinon:
         specifier: ^22.0.0
         version: 22.0.0
-      tap-xunit:
-        specifier: ^2.4.1
-        version: 2.4.1
       ts-node:
         specifier: ^10.4.0
         version: 10.9.2(@types/node@24.13.3)(typescript@5.7.3)
@@ -759,9 +741,6 @@ packages:
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
-
-  '@types/semver@7.7.1':
-    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/sinon@22.0.0':
     resolution: {integrity: sha512-TDbVpbccc2HfiqHR09Argj3mHV1KMW7sCCKj52fsl8lbRLkEn7fB1966EWhOKWUBcqfBueZuPoA7/OK1CKiy3g==}
@@ -1477,9 +1456,6 @@ packages:
   duplexer2@0.1.4:
     resolution: {integrity: sha512-asLFVfWWtJ90ZyOUHMqk7/S2w2guQKxUI2itj3d92ADHhxUSbCMGi1f1cBcJ7xM1To+pE/Khbwo1yuNbMEPKeA==}
 
-  duplexer@0.1.2:
-    resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
-
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -1850,9 +1826,6 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
-
-  events-to-array@1.1.2:
-    resolution: {integrity: sha512-inRWzRY7nG+aXZxBzEqYKB3HPgwflZRopAjDCHv0whhRx+MTUr1ei0ICZUypdyE0HRm4L2d5VEcIqLD6yl+BFA==}
 
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
@@ -3658,14 +3631,6 @@ packages:
     resolution: {integrity: sha512-eNRKgb3z66Yp3D2CixVujOUvXLFUTij/zVnV8KRyvFdQwpz7I5DS8UfRkTeLzb64u+dkzDSdelE24izu+zSSUg==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  tap-parser@1.2.2:
-    resolution: {integrity: sha512-uXKcosa0qoSjeh73dhmX+OpJvpigDxUciOhBcbGUKtmwzEFJjUT1Ql5dpg4M9I1UjXT9b+6n1W05FB8QmKossA==}
-    hasBin: true
-
-  tap-xunit@2.4.1:
-    resolution: {integrity: sha512-qcZStDtjjYjMKAo7QNiCtOW256g3tuSyCSe5kNJniG1Q2oeOExJq4vm8CwboHZURpkXAHvtqMl4TVL7mcbMVVA==}
-    hasBin: true
-
   tapable@0.1.10:
     resolution: {integrity: sha512-jX8Et4hHg57mug1/079yitEKWGB3LCwoxByLsNim89LABq8NqgiX+6iYVOsq0vX8uJHkU+DZ5fnq95f800bEsQ==}
     engines: {node: '>=0.6'}
@@ -3696,9 +3661,6 @@ packages:
 
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
-
-  through2@2.0.5:
-    resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
 
   time-zone@1.0.0:
     resolution: {integrity: sha512-TIsDdtKo6+XrPtiTm1ssmMngN1sAhyKnTO2kunQWqNPWIVvCm15Wmw4SWInwTVgJ5u/Tr04+8Ei9TNcw4x4ONA==}
@@ -4019,10 +3981,6 @@ packages:
     resolution: {integrity: sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==}
     engines: {node: '>=8.0'}
 
-  xmlbuilder@4.2.1:
-    resolution: {integrity: sha512-oEePiEefhQhAeUnwRnIBLBWmk/fsWWbQ53EEWsRuzECbQ3m5o/Esmq6H47CYYwSLW+Ynt0rS9hd0pd2ogMAWjg==}
-    engines: {node: '>=0.8.0'}
-
   xo@0.60.0:
     resolution: {integrity: sha512-Il6Ap/bkYQm2CvocfiNY8yR52OospMdlxwbT2V/8KBRRCc+JKI1ARyFJpemuze9ZHBy/AAaDurjqWNj0C2DCYQ==}
     engines: {node: '>=18.18'}
@@ -4032,10 +3990,6 @@ packages:
     peerDependenciesMeta:
       webpack:
         optional: true
-
-  xtend@4.0.2:
-    resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
-    engines: {node: '>=0.4'}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -4058,11 +4012,6 @@ packages:
   yargs@17.7.3:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
-
-  yarn@1.22.22:
-    resolution: {integrity: sha512-prL3kGtyG7o9Z9Sv8IPfBNrWTDmXB4Qbes8A9rEzt6wkJV8mUvoirjU0Mp3GGAU06Y0XQyA3/2/RQFVuK7MTfg==}
-    engines: {node: '>=4.0.0'}
-    hasBin: true
 
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
@@ -4734,8 +4683,6 @@ snapshots:
   '@types/responselike@1.0.3':
     dependencies:
       '@types/node': 24.13.3
-
-  '@types/semver@7.7.1': {}
 
   '@types/sinon@22.0.0':
     dependencies:
@@ -5589,8 +5536,6 @@ snapshots:
     dependencies:
       readable-stream: 2.3.8
 
-  duplexer@0.1.2: {}
-
   eastasianwidth@0.2.0: {}
 
   ejs@3.1.10:
@@ -6154,8 +6099,6 @@ snapshots:
   estree-walker@2.0.2: {}
 
   esutils@2.0.3: {}
-
-  events-to-array@1.1.2: {}
 
   events@3.3.0: {}
 
@@ -7963,23 +7906,6 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.3.6
 
-  tap-parser@1.2.2:
-    dependencies:
-      events-to-array: 1.1.2
-      inherits: 2.0.4
-      js-yaml: 3.15.0
-    optionalDependencies:
-      readable-stream: 2.3.8
-
-  tap-xunit@2.4.1:
-    dependencies:
-      duplexer: 0.1.2
-      minimist: 1.2.8
-      tap-parser: 1.2.2
-      through2: 2.0.5
-      xmlbuilder: 4.2.1
-      xtend: 4.0.2
-
   tapable@0.1.10: {}
 
   tapable@2.3.3: {}
@@ -8012,11 +7938,6 @@ snapshots:
       source-map-support: 0.5.21
 
   text-table@0.2.0: {}
-
-  through2@2.0.5:
-    dependencies:
-      readable-stream: 2.3.8
-      xtend: 4.0.2
 
   time-zone@1.0.0: {}
 
@@ -8356,10 +8277,6 @@ snapshots:
 
   xmlbuilder@15.1.1: {}
 
-  xmlbuilder@4.2.1:
-    dependencies:
-      lodash: 4.18.1
-
   xo@0.60.0(@types/eslint@8.56.12)(webpack@5.108.4):
     dependencies:
       '@eslint/eslintrc': 3.3.6
@@ -8406,8 +8323,6 @@ snapshots:
       - eslint-import-resolver-typescript
       - supports-color
 
-  xtend@4.0.2: {}
-
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
@@ -8427,8 +8342,6 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-
-  yarn@1.22.22: {}
 
   yn@3.1.1: {}
 

@@ -4,27 +4,24 @@ import {debounce, DebouncedFunc} from 'lodash';
 
 import VideoMetadataContainer from './video-metadata-container';
 import VideoControlsContainer from './video-controls-container';
-import useEditorOptions, {EditorOptionsState} from 'hooks/editor/use-editor-options';
-import {Format, App} from 'common/types';
+import useEditorOptions from 'hooks/editor/use-editor-options';
+import {App, ExportDestination, Format} from 'common/types';
 import useEditorWindowState from 'hooks/editor/use-editor-window-state';
 
-type EditService = EditorOptionsState['editServices'][0];
-
-type SharePlugin = {
-  pluginName: string;
-  serviceTitle: string;
+type Destination = {
+  destination: ExportDestination;
   app?: App;
 };
 
 const isFormatMuted = (format: Format) => ['gif', 'apng'].includes(format);
+const canCopyFormat = (format: Format) => [Format.gif, Format.apng, Format.mp4].includes(format);
 
 const useOptions = () => {
   const {fps: originalFps} = useEditorWindowState();
   const {
     state: {
       formats,
-      fpsHistory,
-      editServices
+      fpsHistory
     },
     updateFpsUsage,
     isLoading
@@ -37,8 +34,8 @@ const useOptions = () => {
   const [fps, setFps] = useState<number>();
   const [width, setWidth] = useState<number>();
   const [height, setHeight] = useState<number>();
-  const [editPlugin, setEditPlugin] = useState<EditService>();
-  const [sharePlugin, setSharePlugin] = useState<SharePlugin>();
+  const [destination, setDestination] = useState<ExportDestination>('save');
+  const [app, setApp] = useState<App>();
 
   const [wasMuted, setWasMuted] = useState(false);
 
@@ -55,8 +52,9 @@ const useOptions = () => {
     debouncedUpdateFpsUsage?.({format: formatName, fps: newFps});
   };
 
-  const updateSharePlugin = (plugin: SharePlugin) => {
-    setSharePlugin(plugin);
+  const updateDestination = (value: Destination) => {
+    setDestination(value.destination);
+    setApp(value.app);
   };
 
   const updateFormat = (formatName: Format) => {
@@ -71,21 +69,21 @@ const useOptions = () => {
       }
     }
 
-    const formatOption = formats.find(f => f.format === formatName);
-    const selectedSharePlugin = formatOption.plugins.find(plugin => {
-      return (
-        plugin.pluginName === sharePlugin.pluginName &&
-        plugin.title === sharePlugin.serviceTitle &&
-        (plugin.apps?.some(app => app.url === sharePlugin.app?.url) ?? true)
-      );
-    }) ?? formatOption.plugins.find(plugin => plugin.pluginName !== '_openWith');
+    const formatOption = formats.find(option => option.format === formatName);
 
     setFormat(formatName);
-    setSharePlugin({
-      pluginName: selectedSharePlugin.pluginName,
-      serviceTitle: selectedSharePlugin.title,
-      app: selectedSharePlugin.apps ? sharePlugin.app : undefined
-    });
+    if (destination === 'copy' && !canCopyFormat(formatName)) {
+      setDestination('save');
+    } else if (destination === 'open') {
+      const selectedApp = formatOption?.apps.find(option => option.url === app?.url) ?? formatOption?.apps[0];
+      if (selectedApp) {
+        setApp(selectedApp);
+      } else {
+        setDestination('save');
+        setApp(undefined);
+      }
+    }
+
     updateFps(Math.min(originalFps, fpsHistory[formatName]), formatName);
   };
 
@@ -98,14 +96,6 @@ const useOptions = () => {
     const formatName = firstFormat.format;
 
     setFormat(formatName);
-
-    const firstPlugin = firstFormat.plugins.find(plugin => plugin.pluginName !== '_openWith');
-
-    setSharePlugin(firstPlugin && {
-      pluginName: firstPlugin.pluginName,
-      serviceTitle: firstPlugin.title
-    });
-
     updateFps(Math.min(originalFps, fpsHistory[formatName]), formatName);
   }, [isLoading]);
 
@@ -113,15 +103,6 @@ const useOptions = () => {
     setWidth(metadata.width);
     setHeight(metadata.height);
   }, [metadata]);
-
-  useEffect(() => {
-    if (!editPlugin) {
-      return;
-    }
-
-    const newPlugin = editServices.find(service => service.pluginName === editPlugin.pluginName && service.title === editPlugin.title);
-    setEditPlugin(newPlugin);
-  }, [editServices]);
 
   const setDimensions = (dimensions: {width: number; height: number}) => {
     setWidth(dimensions.width);
@@ -134,14 +115,12 @@ const useOptions = () => {
     format,
     fps,
     originalFps,
-    editPlugin,
     formats,
-    editServices,
-    sharePlugin,
-    updateSharePlugin,
+    destination,
+    app,
+    updateDestination,
     updateFps,
     updateFormat,
-    setEditPlugin,
     setDimensions
   };
 };

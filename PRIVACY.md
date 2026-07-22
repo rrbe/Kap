@@ -1,9 +1,7 @@
 # Privacy
 
-Kap does not send analytics or crash reports to this fork or to the original project. The optional console diagnostic setting prints anonymous usage events to the running process console; it does not persist them.
+Kap does not send analytics, diagnostics, or crash reports to this repository or to the original project.
 
-Recordings and exports remain on your Mac unless you explicitly use an export plugin that uploads them. Plugins are separate packages and may have their own privacy policies.
+Recordings and exports remain on your Mac. Kap does not include upload targets or third-party plugins.
 
-Kap may access external services when a plugin requires them. Bug reports are created only when you choose the feedback action.
-
-Questions or problems can be reported through [GitHub Issues](https://github.com/rrbe/Kap/issues).
+The feedback action opens GitHub only when you choose it. Questions or problems can be reported through [GitHub Issues](https://github.com/rrbe/Kap/issues).

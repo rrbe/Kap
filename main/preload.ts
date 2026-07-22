@@ -37,14 +37,12 @@ const allowedCallMainChannels = new Set([
   'create-export',
   'kap-window-mount',
   'kap-window-state',
-  'open-edit-config',
   'preferences-ready',
-  'refresh-usage',
   'save-snapshot',
   'toggle-shortcuts',
   'update-shortcut'
 ]);
-const allowedAnswerMainChannels = new Set(['data', 'edit-service', 'kap-window-state', 'mount', 'open-plugin-config', 'options', 'plugin']);
+const allowedAnswerMainChannels = new Set(['data', 'kap-window-state', 'mount']);
 const allowedSendChannels = new Set(['drag-export', 'renderer-ready']);
 const allowedOnChannels = new Set(['blur', 'display', 'select-app', 'start-recording']);
 const remoteStateChannel = /^kap-remote-state-(editor-options|exports|exports-list)-(subscribe|get-state|call-action|state-updated)$/;
@@ -199,23 +197,12 @@ const api: KapApi = {
     openExternal: (url: string) => invoke('shell-open-external', url)
   },
   preferences: {
-    open: (options?: any) => invoke('preferences-open', options),
+    open: () => invoke('preferences-open'),
     get: () => invoke('preferences-get'),
     getAudioDevices: () => invoke('preferences-audio-devices'),
-    getPluginsFromNpm: () => invoke('preferences-plugins-from-npm'),
-    installPlugin: (name: string) => invoke('preferences-plugin-install', name),
-    uninstallPlugin: (name: string) => invoke('preferences-plugin-uninstall', name),
-    openPluginConfig: (name: string) => invoke('preferences-plugin-config', name),
     ensureMicrophonePermissions: () => invoke('preferences-microphone'),
-    track: (path: string) => invoke('preferences-track', path),
     showError: (message: string) => invoke('preferences-show-error', {message}),
     setOpenOnStartup: (open: boolean) => invoke('preferences-login-item', open)
-  },
-  config: {
-    get: (pluginName: string, serviceTitle?: string) => invoke('config-get', {pluginName, serviceTitle}),
-    change: (key: string, value: any, serviceTitle?: string) => invoke('config-change', {key, value, serviceTitle}),
-    open: () => invoke('config-open'),
-    viewOnGithub: () => invoke('config-view-on-github')
   }
 };
 

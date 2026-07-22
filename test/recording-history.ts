@@ -15,12 +15,9 @@ const test = testAny as TestInterface<{
 import {mockImport, mockModule} from './helpers/mocks';
 
 mockImport('./windows/manager', 'window-manager');
-mockImport('./plugins', 'plugins');
-mockImport('../common/analytics', 'analytics');
 
 import {shell} from './mocks/electron';
 import * as dialog from './mocks/dialog';
-import {plugins} from './mocks/plugins';
 import {windowManager} from './mocks/window-manager';
 
 import {
@@ -29,7 +26,6 @@ import {
   hasActiveRecording,
   addRecording,
   setCurrentRecording,
-  updatePluginState,
   stopCurrentRecording,
   cleanPastRecordings,
   PastRecording
@@ -83,30 +79,11 @@ test('`hasActiveRecording()` with no recording', async t => {
 });
 
 test('`hasActiveRecording()` with playable recording', async t => {
-  const fakeService = {
-    title: 'Fake Service',
-    cleanUp: sinon.fake()
-  };
-
-  const fakePlugin = {
-    name: 'kap-fake-plugin',
-    recordServices: [fakeService]
-  };
-
-  plugins.recordingPlugins = [fakePlugin];
-
   recordingHistory.set('activeRecording', {
     filePath: incomplete,
     name: 'Incomplete',
     date: new Date().toISOString(),
-    apertureOptions: {},
-    plugins: {
-      'kap-fake-plugin': {
-        'Fake Service': {
-          some: 'state'
-        }
-      }
-    }
+    apertureOptions: {}
   });
 
   const checkPromise = hasActiveRecording();
@@ -126,7 +103,6 @@ test('`hasActiveRecording()` with playable recording', async t => {
   t.true(await checkPromise);
 
   t.false(recordingHistory.has('activeRecording'));
-  t.true(fakeService.cleanUp.calledOnceWith({some: 'state'}));
   t.deepEqual(
     recordingHistory.get('recordings'),
     [
@@ -144,8 +120,7 @@ test('`hasActiveRecording()` with known corrupt recording', async t => {
     filePath: corrupt,
     name: 'Corrupt',
     date: new Date().toISOString(),
-    apertureOptions: {},
-    plugins: {}
+    apertureOptions: {}
   });
 
   const checkPromise = hasActiveRecording();
@@ -182,8 +157,7 @@ test('`hasActiveRecording()` with unknown corrupt recording', async t => {
     filePath,
     name: 'Bad',
     date: new Date().toISOString(),
-    apertureOptions: {},
-    plugins: {}
+    apertureOptions: {}
   });
 
   const checkPromise = hasActiveRecording();
@@ -209,48 +183,14 @@ test('`hasActiveRecording()` with unknown corrupt recording', async t => {
 test('`setCurrentRecording()`', t => {
   setCurrentRecording({
     filePath: 'some/path',
-    apertureOptions: {some: 'options'} as any,
-    plugins: {some: 'plugins'} as any
+    apertureOptions: {some: 'options'} as any
   });
 
   t.deepEqual(recordingHistory.get('activeRecording'), {
     filePath: 'some/path',
     name: `Kapture ${moment(t.context.now).format('YYYY-MM-DD')} at ${moment(t.context.now).format('HH.mm.ss')}`,
     date: t.context.now.toISOString(),
-    apertureOptions: {some: 'options'} as any,
-    plugins: {some: 'plugins'} as any
-  });
-});
-
-test('`updatePluginState()`', t => {
-  recordingHistory.set('activeRecording', {
-    name: 'Some name',
-    plugins: {
-      plugin1: {
-        service1: {some: 'state'}
-      },
-      plugin2: {
-        service2: {}
-      }
-    }
-  });
-
-  updatePluginState({
-    plugin1: {
-      service1: {some: 'state'}
-    },
-    plugin2: {
-      service2: {some: 'other state'}
-    }
-  });
-
-  t.deepEqual(recordingHistory.get('activeRecording.plugins'), {
-    plugin1: {
-      service1: {some: 'state'}
-    },
-    plugin2: {
-      service2: {some: 'other state'}
-    }
+    apertureOptions: {some: 'options'} as any
   });
 });
 
