@@ -2,7 +2,6 @@ import type {BrowserWindow} from 'electron';
 import {MacWindow} from '../utils/windows';
 import type {Video} from '../video';
 import type {DialogOptions} from './dialog';
-import type {PreferencesWindowOptions} from './preferences';
 
 export interface EditorManager {
   open: (video: Video) => Promise<void>;
@@ -18,10 +17,6 @@ export interface CropperManager {
   selectApp: (window: MacWindow, activateWindow: (ownerName: string) => Promise<void>) => void;
 }
 
-export interface ConfigManager {
-  open: (pluginName: string) => Promise<void>;
-}
-
 export interface DialogManager {
   open: (options: DialogOptions) => Promise<number | void>;
 }
@@ -32,14 +27,13 @@ export interface ExportsManager {
 }
 
 export interface PreferencesManager {
-  open: (options?: PreferencesWindowOptions) => Promise<BrowserWindow>;
+  open: () => Promise<BrowserWindow>;
   close: () => void;
 }
 
 export class WindowManager {
   editor?: EditorManager;
   cropper?: CropperManager;
-  config?: ConfigManager;
   dialog?: DialogManager;
   exports?: ExportsManager;
   preferences?: PreferencesManager;
@@ -50,10 +44,6 @@ export class WindowManager {
 
   setCropper = (cropperManager: CropperManager) => {
     this.cropper = cropperManager;
-  };
-
-  setConfig = (configManager: ConfigManager) => {
-    this.config = configManager;
   };
 
   setDialog = (dialogManager: DialogManager) => {

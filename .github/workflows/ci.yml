@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            app_path: dist/mac-arm64/Kap.app
+          - arch: x64
+            runner: macos-15-intel
+            app_path: dist/mac/Kap.app
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm build
+      - name: Package
+        env:
+          CSC_FOR_PULL_REQUEST: true
+        run: pnpm exec electron-builder --mac --${{ matrix.arch }}
+      - name: Verify signature
+        env:
+          APP_PATH: ${{ matrix.app_path }}
+        run: |
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign --display --verbose=4 "$APP_PATH" 2>&1 | grep -q '^Signature=adhoc$'
+      - name: Verify architecture
+        run: pnpm check:app-architecture "${{ matrix.app_path }}" "${{ matrix.arch }}"
+      - name: Verify DMG
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          dmg=$(find dist -maxdepth 1 -name "Kap-*-$ARCH.dmg" -print -quit)
+          test -n "$dmg"
+          hdiutil verify "$dmg"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Kap-${{ matrix.arch }}
+          path: dist/Kap-*-${{ matrix.arch }}.dmg
+          if-no-files-found: error

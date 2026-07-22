@@ -17,7 +17,6 @@ const shortcutSchema = {
 
 interface Settings {
   kapturesDir: string;
-  allowAnalytics: boolean;
   showCursor: boolean;
   highlightClicks: boolean;
   record60fps: boolean;
@@ -47,10 +46,6 @@ export const settings = new Store<Settings>({
     kapturesDir: {
       type: 'string',
       default: `${homedir()}/Movies/Kaptures`
-    },
-    allowAnalytics: {
-      type: 'boolean',
-      default: true
     },
     showCursor: {
       type: 'boolean',

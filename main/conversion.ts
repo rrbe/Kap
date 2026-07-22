@@ -13,7 +13,7 @@ import TypedEventEmitter from 'typed-emitter';
 const plist = require('plist');
 
 // A conversion object describes the process of converting a video or recording
-// using ffmpeg that can then be shared multiple times using Share plugins
+// using ffmpeg so the result can be reused by multiple output actions.
 export default class Conversion extends (EventEmitter as new () => TypedEventEmitter<ConversionEvents>) {
   static conversionMap = new Map<string, Conversion>();
 

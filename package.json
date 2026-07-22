@@ -2,14 +2,13 @@
   "name": "kap",
   "productName": "Kap",
   "version": "3.6.0",
-  "description": "An open-source screen recorder built with web technology",
+  "description": "An open-source screen recorder for macOS",
   "license": "MIT",
   "repository": "rrbe/Kap",
   "homepage": "https://github.com/rrbe/Kap",
   "author": {
-    "name": "Wulkano",
-    "email": "hello@wulkano.com",
-    "url": "https://wulkano.com"
+    "name": "rrbe",
+    "url": "https://github.com/rrbe"
   },
   "private": true,
   "packageManager": "pnpm@10.33.2",
@@ -18,7 +17,6 @@
     "lint": "xo",
     "lint:fix": "xo --fix",
     "test:main": "TS_NODE_PROJECT=test/tsconfig.json ava",
-    "test:ci": "pnpm test:main --tap | tap-xunit > ~/reports/ava.xml",
     "test": "pnpm lint && pnpm test:main",
     "start": "pnpm build-main && node scripts/dev.mjs",
     "build-capture-helper": "node scripts/build-capture-helper.mjs",
@@ -33,16 +31,11 @@
     "prepare": "husky",
     "dev": "vite --config renderer/vite.config.ts"
   },
-  "bundle": {
-    "name": "Kap"
-  },
   "dependencies": {
-    "ajv": "^8.20.0",
     "classnames": "^2.2.6",
     "electron-store": "^8.2.0",
     "execa": "5.0.0",
     "ffmpeg-static": "^5.3.0",
-    "got": "11.8.6",
     "lodash": "^4.17.21",
     "mac-screen-capture-permissions": "^2.1.0",
     "moment": "^2.29.1",
@@ -52,10 +45,8 @@
     "prop-types": "^15.7.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "semver": "^7.3.4",
     "styled-jsx": "^5.1.7",
-    "unstated-next": "^1.1.0",
-    "yarn": "^1.22.10"
+    "unstated-next": "^1.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -66,7 +57,6 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@types/semver": "^7.7.1",
     "@types/sinon": "^22.0.0",
     "@vitejs/plugin-react": "^6.0.3",
     "ava": "^6.4.1",
@@ -79,7 +69,6 @@
     "module-alias": "^2.2.2",
     "rolldown": "^1.2.0",
     "sinon": "^22.0.0",
-    "tap-xunit": "^2.4.1",
     "ts-node": "^10.4.0",
     "type-fest": "^4.41.0",
     "typed-emitter": "^2.1.0",
@@ -255,18 +244,11 @@
     ],
     "ignoredBuiltDependencies": [
       "electron-winstaller",
-      "mac-screen-capture-permissions",
-      "yarn"
+      "mac-screen-capture-permissions"
     ]
   },
   "build": {
     "appId": "io.github.rrbe.kap",
-    "protocols": {
-      "name": "kap",
-      "schemes": [
-        "kap"
-      ]
-    },
     "files": [
       "static",
       "dist-js/**/*",
@@ -289,7 +271,6 @@
       "extendInfo": {
         "NSScreenCaptureUsageDescription": "Kap needs access to the screen to record it.",
         "NSMicrophoneUsageDescription": "Kap needs access to the microphone to be able to record audio for screen recordings.",
-        "NSCameraUsageDescription": "A Kap plugin wants to use the camera.",
         "NSUserNotificationAlertStyle": "alert",
         "CFBundleDocumentTypes": [
           {

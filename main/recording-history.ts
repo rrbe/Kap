@@ -8,7 +8,6 @@ import execa from 'execa';
 import {SetOptional} from 'type-fest';
 
 import {windowManager} from './windows/manager';
-import {plugins} from './plugins';
 import {generateTimestampedName} from './utils/timestamped-name';
 import {Video} from './video';
 import {ApertureOptions} from './common/types';
@@ -24,7 +23,6 @@ export interface PastRecording {
 
 export interface ActiveRecording extends PastRecording {
   apertureOptions: ApertureOptions;
-  plugins: Record<string, Record<string, any>>;
 }
 
 export const recordingHistory = new Store<{
@@ -46,9 +44,6 @@ export const recordingHistory = new Store<{
           type: 'string'
         },
         apertureOptions: {
-          type: 'object'
-        },
-        plugins: {
           type: 'object'
         }
       }
@@ -78,20 +73,14 @@ export const setCurrentRecording = ({
   filePath,
   name = generateTimestampedName(),
   date = new Date().toISOString(),
-  apertureOptions,
-  plugins = {}
+  apertureOptions
 }: SetOptional<ActiveRecording, 'name' | 'date'>) => {
   recordingHistory.set('activeRecording', {
     filePath,
     name,
     date,
-    apertureOptions,
-    plugins
+    apertureOptions
   });
-};
-
-export const updatePluginState = (state: ActiveRecording['plugins']) => {
-  recordingHistory.set('activeRecording.plugins', state);
 };
 
 export const stopCurrentRecording = (recordingName?: string) => {
@@ -127,24 +116,7 @@ export const cleanPastRecordings = () => {
   recordingHistory.set('recordings', []);
 };
 
-export const cleanUpRecordingPlugins = (usedPlugins: ActiveRecording['plugins']) => {
-  const recordingPlugins = plugins.recordingPlugins;
-
-  for (const pluginName of Object.keys(usedPlugins)) {
-    const plugin = recordingPlugins.find(p => p.name === pluginName);
-    for (const [serviceTitle, persistedState] of Object.entries(usedPlugins[pluginName])) {
-      const service = plugin?.recordServices.find(s => s.title === serviceTitle);
-
-      if (service?.cleanUp) {
-        service.cleanUp(persistedState);
-      }
-    }
-  }
-};
-
 export const handleIncompleteRecording = async (recording: ActiveRecording) => {
-  cleanUpRecordingPlugins(recording.plugins);
-
   try {
     await execa(ffmpegPath, [
       '-i', recording.filePath,

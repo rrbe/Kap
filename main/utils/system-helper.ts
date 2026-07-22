@@ -26,6 +26,7 @@ export type OpenWithApp = {
   url: string;
   isDefault: boolean;
   icon: string;
+  name?: string;
 };
 
 const runJson = <T>(arguments_: string[]) => new Promise<T>((resolve, reject) => {

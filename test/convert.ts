@@ -19,10 +19,8 @@ const getRandomFileName = (ext: Format = Format.mp4) => `${randomUUID()}.${getFo
 const input = path.resolve(__dirname, 'fixtures', 'input.mp4');
 const retinaInput = path.resolve(__dirname, 'fixtures', 'input@2x.mp4');
 
-mockImport('../common/analytics', 'analytics');
-mockImport('../plugins/service-context', 'service-context');
-mockImport('../plugins', 'plugins');
 const {settings} = mockImport('../common/settings', 'settings');
+settings.setMock('hardwareAcceleratedExports', false);
 
 import {convertTo, copyUneditedMp4} from '../main/converters';
 import {getVideoEncoderArgs} from '../main/converters/h264';

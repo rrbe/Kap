@@ -44,7 +44,7 @@ const convertToGif = PCancelable.fn(async (options: ConvertOptions, onCancel: PC
   const palettePath = temporaryFile({extension: 'png'});
   const paletteColors = settings.get('lossyCompression', false) ? 128 : 256;
 
-  const paletteProcess = convert(palettePath, {shouldTrack: false}, conditionalArgs(
+  const paletteProcess = convert(palettePath, {}, conditionalArgs(
     '-i', options.inputPath,
     '-vf', `fps=${options.fps}${options.shouldCrop ? `,scale=${options.width}:${options.height}:flags=lanczos` : ''},palettegen=max_colors=${paletteColors}:stats_mode=diff`,
     {

@@ -53,22 +53,11 @@ export type KapApi = {
     openExternal: (url: string) => Promise<any>;
   };
   preferences: {
-    open: (options?: any) => Promise<any>;
+    open: () => Promise<any>;
     get: () => Promise<any>;
     getAudioDevices: () => Promise<any>;
-    getPluginsFromNpm: () => Promise<any>;
-    installPlugin: (name: string) => Promise<any>;
-    uninstallPlugin: (name: string) => Promise<any>;
-    openPluginConfig: (name: string) => Promise<any>;
     ensureMicrophonePermissions: () => Promise<boolean>;
-    track: (path: string) => Promise<any>;
     showError: (message: string) => Promise<any>;
     setOpenOnStartup: (open: boolean) => Promise<any>;
-  };
-  config: {
-    get: (pluginName: string, serviceTitle?: string) => Promise<any>;
-    change: (key: string, value: any, serviceTitle?: string) => Promise<any>;
-    open: () => Promise<any>;
-    viewOnGithub: () => Promise<any>;
   };
 };

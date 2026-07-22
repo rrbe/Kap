@@ -14,8 +14,7 @@ import Category from './category';
 class General extends React.Component {
   static defaultProps = {
     audioDevices: [],
-    kapturesDir: '',
-    category: 'general'
+    kapturesDir: ''
   };
 
   state = {highlightClicksSupported: window.kap.app.getInfo().highlightClicksSupported};
@@ -28,7 +27,6 @@ class General extends React.Component {
     const {
       kapturesDir,
       openOnStartup,
-      allowAnalytics,
       showCursor,
       highlightClicks,
       record60fps,
@@ -45,7 +43,6 @@ class General extends React.Component {
       setOpenOnStartup,
       updateShortcut,
       toggleShortcuts,
-      category,
       hardwareAcceleratedExports,
       lossyCompression,
       shortcuts,
@@ -61,7 +58,7 @@ class General extends React.Component {
 
     const homeDirectory = window.kap.app.getInfo().homeDirectory;
     const kapturesDirPath = kapturesDir === homeDirectory || kapturesDir.startsWith(`${homeDirectory}/`) ? kapturesDir.replace(homeDirectory, '~') : kapturesDir;
-    const tabIndex = category === 'general' ? 0 : -1;
+    const tabIndex = 0;
     const fpsOptions = [{label: '30 FPS', value: false}, {label: '60 FPS', value: true}];
 
     return (
@@ -168,13 +165,6 @@ class General extends React.Component {
             onSelect={value => toggleSetting('record60fps', value)}/>
         </Item>
         <Item
-          key="allowAnalytics"
-          title="Console diagnostics"
-          subtitle="Print anonymous usage events to the process console; nothing is saved"
-        >
-          <Switch tabIndex={tabIndex} checked={allowAnalytics} onClick={() => toggleSetting('allowAnalytics')}/>
-        </Item>
-        <Item
           key="openOnStartup"
           title="Start automatically"
           subtitle="Launch Kap on system startup"
@@ -232,13 +222,11 @@ General.propTypes = {
   recordSystemAudio: PropTypes.bool,
   kapturesDir: PropTypes.string,
   openOnStartup: PropTypes.bool,
-  allowAnalytics: PropTypes.bool,
   loopExports: PropTypes.bool,
   pickKapturesDir: PropTypes.elementType.isRequired,
   setOpenOnStartup: PropTypes.elementType.isRequired,
   updateShortcut: PropTypes.elementType.isRequired,
   toggleShortcuts: PropTypes.elementType.isRequired,
-  category: PropTypes.string,
   shortcutMap: PropTypes.object,
   shortcuts: PropTypes.object,
   hardwareAcceleratedExports: PropTypes.bool,
@@ -258,9 +246,7 @@ export default connect(
     audioDevices,
     kapturesDir,
     openOnStartup,
-    allowAnalytics,
     loopExports,
-    category,
     hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,
@@ -276,9 +262,7 @@ export default connect(
     audioDevices,
     kapturesDir,
     openOnStartup,
-    allowAnalytics,
     loopExports,
-    category,
     hardwareAcceleratedExports,
     lossyCompression,
     shortcuts,

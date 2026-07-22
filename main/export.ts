@@ -1,27 +1,24 @@
-import {ipcMain, dialog, app} from 'electron';
+import {ipcMain, dialog, app, BrowserWindow, Notification, shell} from 'electron';
 import {EventEmitter} from 'events';
+import {promises as fs} from 'fs';
 import PCancelable, {CancelError, OnCancelFunction} from 'p-cancelable';
 import Conversion from './conversion';
-import {InstalledPlugin} from './plugins/plugin';
-import {ShareService} from './plugins/service';
-import {ShareServiceContext} from './plugins/service-context';
-import {prettifyFormat} from './utils/formats';
 import {ipcMain as ipc} from './utils/ipc';
 import {setExportMenuItemState} from './menus/utils';
 import {Video} from './video';
-import {ConversionOptions, ExportState, ExportStatus, Format, CreateExportOptions} from './common/types';
+import {ConversionOptions, ExportDestination, ExportState, ExportStatus, Format, CreateExportOptions} from './common/types';
 import {showError} from './utils/errors';
 import TypedEventEmitter from 'typed-emitter';
-import {plugins} from './plugins';
-import {askForTargetFilePath} from './plugins/built-in/save-file-plugin';
 import path from 'path';
 import {ensureDockIsShowingSync} from './utils/dock';
 import {windowManager} from './windows/manager';
+import {settings} from './common/settings';
+import {openFileWithApp} from './utils/system-helper';
 
 export interface ExportOptions {
-  plugin: InstalledPlugin;
-  service: ShareService;
-  extras: Record<string, unknown>;
+  destination: ExportDestination;
+  appUrl?: string;
+  targetFilePath?: string;
 }
 
 export default class Export extends (EventEmitter as new () => TypedEventEmitter<ExportEvents>) {
@@ -39,7 +36,6 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
   private text = 'Loading…';
   private percentage = 0;
 
-  private readonly context: ShareServiceContext;
   private process?: PCancelable<void>;
   private areOutputActionsDisabled = false;
   private error?: Error;
@@ -48,18 +44,13 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
   private readonly _start = PCancelable.fn(async (onCancel: OnCancelFunction) => {
     this.error = undefined;
     this.text = 'Loading…';
-    const action = this.options.service.action(this.context) as any;
 
     onCancel(() => {
-      if (action.cancel && typeof action.cancel === 'function') {
-        action.cancel();
-      }
-
-      this.context.isCanceled = true;
+      this.conversion?.cancel();
     });
 
     try {
-      await action;
+      await this.exportFile();
       this.status = ExportStatus.completed;
       this.text = 'Export completed';
       this.emit('updated', this.data);
@@ -81,21 +72,6 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
     video.generatePreviewImage();
 
     this.description = `${this.conversionOptions.width} x ${this.conversionOptions.height} at ${this.conversionOptions.fps} FPS`;
-
-    this.context = new ShareServiceContext({
-      plugin: options.plugin,
-      format,
-      prettyFormat: prettifyFormat(format),
-      defaultFileName: video.title,
-      filePath: this.filePath,
-      onProgress: this.onProgress,
-      onCancel: this.cancel
-    });
-
-    // Used for built-in plugins like save-to-disk
-    for (const [key, value] of Object.entries(options.extras)) {
-      (this.context as any)[key] = value;
-    }
 
     setExportMenuItemState(true);
   }
@@ -122,8 +98,7 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
   get finalFilePath() {
     const filePath = this.conversion?.convertedFilePath;
 
-    // If Save To Disk plugin is used, open the file in the final destination, not the temp one
-    return filePath && ((this.options.extras.targetFilePath as string) ?? filePath);
+    return filePath && (this.options.targetFilePath ?? filePath);
   }
 
   get data(): ExportState {
@@ -182,7 +157,6 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
     this.conversion?.cancel();
     this.status = ExportStatus.canceled;
     this.text = 'Export canceled';
-    this.context.isCanceled = true;
     this.emit('updated', this.data);
   };
 
@@ -194,7 +168,7 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
     this.emit('updated', this.data);
   };
 
-  private readonly captureError = (error: Error, fromConversion = false) => {
+  private readonly captureError = (error: Error) => {
     if ((error as CancelError).isCanceled) {
       this.text = 'Export canceled';
       this.status = ExportStatus.canceled;
@@ -204,14 +178,48 @@ export default class Export extends (EventEmitter as new () => TypedEventEmitter
 
       if (!this.error) {
         this.error = error;
-        showError(error, fromConversion ? undefined : {plugin: this.options.plugin});
+        showError(error);
       }
     }
 
     this.emit('updated', this.data);
   };
 
-  private readonly captureConversionError = (error: Error) => this.captureError(error, true);
+  private readonly captureConversionError = (error: Error) => this.captureError(error);
+
+  private readonly exportFile = async () => {
+    const temporaryFilePath = await this.filePath();
+
+    if (this.options.destination === 'copy') {
+      this.conversion?.copy();
+      return;
+    }
+
+    if (this.options.destination === 'open') {
+      if (this.options.appUrl) {
+        openFileWithApp(temporaryFilePath, this.options.appUrl);
+      }
+
+      return;
+    }
+
+    if (!this.options.targetFilePath) {
+      throw new Error('Missing export destination');
+    }
+
+    await fs.copyFile(temporaryFilePath, this.options.targetFilePath);
+
+    const notification = new Notification({
+      title: 'File saved successfully!',
+      body: 'Click to show the file in Finder'
+    });
+
+    notification.on('click', () => {
+      shell.showItemInFolder(this.options.targetFilePath!);
+    });
+
+    notification.show();
+  };
 
   private readonly setupConversionListeners = () => {
     this.conversion?.once('file-size', () => this.emit('updated', this.data));
@@ -238,6 +246,40 @@ type ExportsEvents = {
   updated: (state: ExportState) => void;
 };
 
+const filterMap = new Map([
+  [Format.mp4, [{name: 'Movies', extensions: ['mp4']}]],
+  [Format.webm, [{name: 'Movies', extensions: ['webm']}]],
+  [Format.gif, [{name: 'Images', extensions: ['gif']}]],
+  [Format.apng, [{name: 'Images', extensions: ['apng']}]],
+  [Format.av1, [{name: 'Movies', extensions: ['mp4']}]],
+  [Format.hevc, [{name: 'Movies', extensions: ['mp4']}]]
+]);
+
+let lastSavedDirectory: string;
+
+const askForTargetFilePath = async (
+  window: BrowserWindow,
+  format: Format,
+  fileName: string
+) => {
+  const kapturesDir = settings.get('kapturesDir');
+  await fs.mkdir(kapturesDir, {recursive: true});
+
+  const defaultPath = path.join(lastSavedDirectory ?? kapturesDir, fileName);
+  const {filePath} = await dialog.showSaveDialog(window, {
+    title: fileName,
+    defaultPath,
+    filters: filterMap.get(format)
+  });
+
+  if (filePath) {
+    lastSavedDirectory = path.dirname(filePath);
+    return filePath;
+  }
+
+  return undefined;
+};
+
 export const setUpExportsListeners = () => {
   ipcMain.on('drag-export', async (event: any, id: string) => {
     const exportMap = Export.exportsMap.get(id);
@@ -252,40 +294,28 @@ export const setUpExportsListeners = () => {
   });
 
   ipc.answerRenderer('create-export', async ({
-    filePath, conversionOptions, format, plugins: pluginOptions
+    filePath, conversionOptions, format, destination, app: selectedApp
   }: CreateExportOptions, window) => {
     const video = Video.fromId(filePath);
-    const extras: Record<string, any> = {
-      appUrl: pluginOptions.share.app?.url
-    };
 
     if (!video) {
       return;
     }
 
-    if (pluginOptions.share.pluginName === '_saveToDisk') {
-      const targetFilePath = await askForTargetFilePath(
+    let targetFilePath: string | undefined;
+    if (destination === 'save') {
+      targetFilePath = await askForTargetFilePath(
         window,
         format,
         video.title
       );
 
-      if (targetFilePath) {
-        extras.targetFilePath = targetFilePath;
-      } else {
+      if (!targetFilePath) {
         return;
       }
     }
 
-    const exportPlugin = plugins.sharePlugins.find(plugin => {
-      return plugin.name === pluginOptions.share.pluginName;
-    });
-
-    const exportService = exportPlugin?.shareServices.find(service => {
-      return service.title === pluginOptions.share.serviceTitle;
-    });
-
-    if (!exportPlugin || !exportService) {
+    if (destination === 'open' && !selectedApp) {
       return;
     }
 
@@ -294,11 +324,11 @@ export const setUpExportsListeners = () => {
       format,
       conversionOptions,
       {
-        plugin: exportPlugin,
-        service: exportService,
-        extras
+        destination,
+        appUrl: selectedApp?.url,
+        targetFilePath
       },
-      extras.targetFilePath && path.parse(extras.targetFilePath).name
+      targetFilePath && path.parse(targetFilePath).name
     );
 
     newExport.start();

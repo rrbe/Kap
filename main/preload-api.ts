@@ -13,14 +13,11 @@ import path from 'path';
 import {pathToFileURL} from 'url';
 
 import {startRecording} from './aperture';
-import {track} from './common/analytics';
 import {defaultInputDeviceId} from './common/constants';
 import {flags} from './common/flags';
 import {settings, shortcuts} from './common/settings';
 import {ensureMicrophonePermissions} from './common/system-permissions';
 import {getCogMenu} from './menus/cog';
-import {plugins} from './plugins';
-import {InstalledPlugin} from './plugins/plugin';
 import {getAudioDevices, getDefaultInputDevice, getSelectedInputDeviceId} from './utils/devices';
 import {showError} from './utils/errors';
 import {buildWindowsMenu} from './utils/windows';
@@ -28,7 +25,6 @@ import {windowManager} from './windows/manager';
 import {isDevelopment} from './utils/environment';
 
 const windowsMenus = new Map<number, Menu>();
-const configPlugins = new Map<number, InstalledPlugin>();
 
 const assertTrustedSender = (sender: Electron.WebContents) => {
   const page = new URL(sender.getURL());
@@ -46,40 +42,6 @@ const getWindow = (sender: Electron.WebContents) => {
   }
 
   return window;
-};
-
-const serializePlugin = (plugin: any) => ({
-  name: plugin.name,
-  prettyName: plugin.prettyName,
-  version: plugin.version,
-  description: plugin.description,
-  link: plugin.link,
-  kapVersion: plugin.kapVersion,
-  macosVersion: plugin.macosVersion,
-  isCompatible: plugin.isCompatible,
-  isInstalled: plugin.isInstalled,
-  isSymlink: plugin instanceof InstalledPlugin ? plugin.isSymLink : false,
-  hasConfig: plugin instanceof InstalledPlugin ? plugin.hasConfig : false,
-  isValid: plugin instanceof InstalledPlugin ? plugin.isValid : true
-});
-
-const serializeConfig = (plugin: InstalledPlugin, serviceTitle?: string) => {
-  const validators = plugin.config.validators
-    .filter(({title}) => !serviceTitle || title === serviceTitle)
-    .map(validator => {
-      validator.validate(plugin.config.store);
-      return {
-        title: validator.title,
-        description: validator.description,
-        config: validator.config,
-        errors: validator.validate.errors
-      };
-    });
-
-  return {
-    validators,
-    values: plugin.config.store
-  };
 };
 
 const popupMenu = async (window: BrowserWindow, template: any[], options: any) => new Promise<string | undefined>(resolve => {
@@ -245,12 +207,10 @@ const setupAsyncApi = () => {
           settings: settings.store,
           shortcuts,
           defaultInputDeviceId,
-          openOnStartup: app.getLoginItemSettings().openAtLogin,
-          pluginsInstalled: plugins.installedPlugins.map(plugin => serializePlugin(plugin)),
-          pluginsDir: plugins.pluginsDir
+          openOnStartup: app.getLoginItemSettings().openAtLogin
         };
       case 'preferences-open':
-        await windowManager.preferences?.open(data);
+        await windowManager.preferences?.open();
         return;
       case 'preferences-audio-devices': {
         const devices = await getAudioDevices({refresh: true});
@@ -260,51 +220,12 @@ const setupAsyncApi = () => {
         };
       }
 
-      case 'preferences-plugins-from-npm':
-        return (await plugins.getFromNpm()).map(plugin => serializePlugin(plugin));
-      case 'preferences-plugin-install': {
-        const plugin = await plugins.install(data);
-        return plugin && serializePlugin(plugin);
-      }
-
-      case 'preferences-plugin-uninstall':
-        return serializePlugin(await plugins.uninstall(data));
-      case 'preferences-plugin-config':
-        return plugins.openPluginConfig(data);
       case 'preferences-microphone':
         return ensureMicrophonePermissions();
-      case 'preferences-track':
-        return track(data);
       case 'preferences-show-error':
         return showError(new Error(data.message));
       case 'preferences-login-item':
         return app.setLoginItemSettings({openAtLogin: data});
-      case 'config-get': {
-        const plugin = new InstalledPlugin(data.pluginName);
-        configPlugins.set(event.sender.id, plugin);
-        event.sender.once('destroyed', () => configPlugins.delete(event.sender.id));
-        return serializeConfig(plugin, data.serviceTitle);
-      }
-
-      case 'config-change': {
-        const plugin = configPlugins.get(event.sender.id);
-        if (!plugin) {
-          throw new Error('Plugin config is not loaded');
-        }
-
-        if (data.value === undefined) {
-          plugin.config.delete(data.key);
-        } else {
-          plugin.config.set(data.key, data.value);
-        }
-
-        return serializeConfig(plugin, data.serviceTitle);
-      }
-
-      case 'config-open':
-        return configPlugins.get(event.sender.id)?.openConfigInEditor();
-      case 'config-view-on-github':
-        return configPlugins.get(event.sender.id)?.viewOnGithub();
       default:
         throw new Error(`Unknown preload action: ${action}`);
     }

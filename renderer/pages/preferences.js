@@ -1,9 +1,7 @@
 import React from 'react';
 import {Provider} from '../utils/state-container';
-import classNames from 'classnames';
 import {ipcRenderer as ipc} from 'utils/ipc';
 
-import PreferencesNavigation from '../components/preferences/navigation';
 import WindowHeader from '../components/window-header';
 import Categories from '../components/preferences/categories';
 
@@ -12,29 +10,15 @@ import PreferencesContainer from '../containers/preferences';
 const preferencesContainer = new PreferencesContainer();
 
 export default class PreferencesPage extends React.Component {
-  state = {overlay: false};
-
   componentDidMount() {
-    ipc.answerMain('open-plugin-config', preferencesContainer.openPluginsConfig);
-    ipc.answerMain('options', preferencesContainer.setNavigation);
-    ipc.answerMain('mount', async () => preferencesContainer.mount(this.setOverlay));
+    ipc.answerMain('mount', preferencesContainer.mount);
   }
 
-  setOverlay = overlay => {
-    this.setState({overlay});
-  };
-
   render() {
-    const {overlay} = this.state;
-    const className = classNames('overlay', {active: overlay});
-
     return (
       <div className="cover-window">
-        <div className={className}/>
         <Provider inject={[preferencesContainer]}>
-          <WindowHeader title="Preferences">
-            <PreferencesNavigation/>
-          </WindowHeader>
+          <WindowHeader title="Preferences"/>
           <Categories/>
         </Provider>
         <style jsx global>{`
@@ -61,22 +45,6 @@ export default class PreferencesPage extends React.Component {
               letter-spacing: -.01rem;
               cursor: default;
             }
-
-            .overlay {
-              position: fixed;
-              z-index: 12;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              transition: background-color .3s ease-in-out;
-              pointer-events: none;
-            }
-
-            .overlay.active {
-              background-color: rgba(0,0,0,0.2);
-            }
-
 
             @keyframes shake {
               10%,
